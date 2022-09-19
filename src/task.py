@@ -81,7 +81,6 @@ def main(job_dir: str, bucket_name: str, env: str, dataset: str, dataset_id: str
 
         if dataset == 'cookpad':
             filepaths.append('data/raw/recipes.json')
-            # filepaths.append(f'data/raw/en_2020-03-16T00_04_34_recipe_image_tagspace5000_300.pkl')
         else:
             # Append appropriate files to the path list
             pass
@@ -111,7 +110,7 @@ def main(job_dir: str, bucket_name: str, env: str, dataset: str, dataset_id: str
         gc.collect()
 
     results_df = DataFrame(results)
-    logger.info(results_df)
+    logger.info('\n' + str(results_df))
     results_df.to_csv(f'{project_dir}/logs/{dataset}_{model_name}_results.csv', index=False)
 
     if env == 'cloud' and job_name == 'chief':

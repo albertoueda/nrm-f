@@ -30,16 +30,7 @@ class Naive(BaseModel):
         texts = [layers.GlobalMaxPooling1D()(text) for text in texts]
         country = layers.Embedding(self.total_countries, self.embedding_dim)(country_input)
         country = tf.reshape(country, shape=(-1, self.embedding_dim,))
-        image_embedding = self.load_pretrained_embedding(
-            embedding_filepath=f'{project_dir}/data/raw/en_2020-03-16T00_04_34_recipe_image_tagspace5000_300.pkl',
-            embedding_dim=300,
-            name='image_embedding'
-        )
-        image = image_embedding(doc_id_input)
-        image = tf.reshape(image, shape=(-1, 300,))
-        image = layers.Dropout(.2)(image)
-        image = layers.Dense(self.embedding_dim)(image)
-        features = texts + [country, image]
+        features = texts + [country]
 
         x = layers.concatenate(features)
         x = layers.Dense(32, activation='relu')(x)
