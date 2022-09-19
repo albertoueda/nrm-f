@@ -35,11 +35,11 @@ def run_experiment(dataset: str, dataset_id: int, model_name: str, epochs: int, 
 @click.option('--job-dir', type=str)
 @click.option('--bucket-name', type=str)
 @click.option('--env', type=str)
-@click.option('--dataset', type=str)
-@click.option('--dataset-id', type=str)
-@click.option('--model-name', type=str)
-@click.option('--epochs', type=int)
-@click.option('--batch-size', type=int)
+@click.option('--dataset', type=str, default='cookpad')
+@click.option('--dataset-id', type=str, default='large')
+@click.option('--model-name', type=str, default='nrmf_simple_query')
+@click.option('--epochs', type=int, default=1)
+@click.option('--batch-size', type=int, default=2048)
 def main(job_dir: str, bucket_name: str, env: str, dataset: str, dataset_id: str, model_name: str, epochs: int,
          batch_size: int):
     logger.add(sys.stdout, format='{time} {level} {message}')
@@ -66,7 +66,7 @@ def main(job_dir: str, bucket_name: str, env: str, dataset: str, dataset_id: str
         start, stop = [int(n) for n in dataset_id.split('-')]
         dataset_ids = range(start, stop + 1)
     else:
-        dataset_ids = [int(dataset_id)]
+        dataset_ids = [dataset_id] #[int(dataset_id)]
 
     if env == 'cloud':
         logger.info('Download data')
@@ -81,7 +81,7 @@ def main(job_dir: str, bucket_name: str, env: str, dataset: str, dataset_id: str
 
         if dataset == 'cookpad':
             filepaths.append('data/raw/recipes.json')
-            filepaths.append(f'data/raw/en_2020-03-16T00_04_34_recipe_image_tagspace5000_300.pkl')
+            # filepaths.append(f'data/raw/en_2020-03-16T00_04_34_recipe_image_tagspace5000_300.pkl')
         else:
             # Append appropriate files to the path list
             pass
@@ -109,6 +109,7 @@ def main(job_dir: str, bucket_name: str, env: str, dataset: str, dataset_id: str
             'ndcg': ndcg_score,
         })
         gc.collect()
+
     results_df = DataFrame(results)
     logger.info(results_df)
     results_df.to_csv(f'{project_dir}/logs/{dataset}_{model_name}_results.csv', index=False)

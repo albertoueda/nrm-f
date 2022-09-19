@@ -139,16 +139,18 @@ def generate(train_size: float = 0.8):
 
     logger.info('Genereate large dataset')
     # 351495 lists, 136764 recipes
-    dataset = generate_large(recipes, interactions_df, train_size)
+    dataset = generate_large(recipes, interactions_df, train_size)        
     gc.collect()
 
-    logger.info('Genereate medium dataset')
-    # 191144 lists, 55117 recipes
-    dataset = generate_medium(recipes, dataset, popular_queries, train_size)
-    gc.collect()
+    logger.debug(f'Dataset: {dataset[:2]}')
 
-    logger.info('Genereate small dataset')
-    # 5734 lists, 24713 recipes
-    generate_small(recipes, dataset, train_size)
+    # logger.info('Genereate medium dataset')
+    # # 191144 lists, 55117 recipes
+    # dataset = generate_medium(recipes, dataset, popular_queries, train_size)
+    # gc.collect()
+
+    # logger.info('Genereate small dataset')
+    # # 5734 lists, 24713 recipes
+    # generate_small(recipes, dataset, train_size)
 
     logger.info('Done')

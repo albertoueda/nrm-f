@@ -9,6 +9,7 @@ project_dir = Path(__file__).resolve().parents[3]
 
 def load_raw_recipes() -> Dict:
     recipes = defaultdict(dict)
+
     with open(f'{project_dir}/data/raw/recipes.json') as file:
         keys = [
             'recipe_id',
@@ -23,6 +24,7 @@ def load_raw_recipes() -> Dict:
         for recipe_id in raw_recipes:
             for key in keys:
                 recipes[int(recipe_id)][key] = raw_recipes[recipe_id][key]
+
     return recipes
 
 

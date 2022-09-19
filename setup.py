@@ -17,7 +17,7 @@ setup(
     long_description=readme,
     name='src',
     version='0.1.0',
-    python_requires='==3.7.9',
+    python_requires='>=3.7.9',
     author='Kentaro Takiguchi',
     packages=find_packages(),
     package_dir={"field-interactions-in-document-ranking": "src"},
