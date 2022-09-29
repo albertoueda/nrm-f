@@ -1,10 +1,9 @@
 from typing import Dict, Tuple
 
-from src.config import cookpad
+from src.config import cookpad, pm
 from src.config.base_configs import TrainConfig, EvalConfig
 
-
-def get_config(dataset: str, dataset_id: int, model_name: str, epochs: int, docs: Dict) -> Tuple[
+def get_config(dataset: str, dataset_id: int, model_name: str, epochs: int, docs: Dict = None) -> Tuple[
     TrainConfig, EvalConfig]:
     if dataset == 'cookpad':
         from src.data.cookpad.preprocessors import ConcatDataProcessor
@@ -19,6 +18,12 @@ def get_config(dataset: str, dataset_id: int, model_name: str, epochs: int, docs
             'fwfm_all': cookpad.fwfm_all_config,
             'fwfm_selected': cookpad.fwfm_selected_config,
             'fwfm_all_without_1st': cookpad.fwfm_all_without_1st_config,
+        }[model_name](f'{dataset}.{dataset_id}', epochs, data_processor)
+    elif dataset == 'pm19':
+        from src.data.pm19.preprocessors import PM19DataProcessor
+        data_processor = PM19DataProcessor()
+        train_config, eval_config = {
+            'nrmf_simple_query': pm.nrmf_simple_query_config,
         }[model_name](f'{dataset}.{dataset_id}', epochs, data_processor)
     else:
         raise ValueError(f"Invalid dataset type is given: {dataset}")

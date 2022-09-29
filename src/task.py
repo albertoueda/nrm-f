@@ -19,8 +19,8 @@ from src.training import train_ranking_model
 project_dir = Path(__file__).resolve().parents[1]
 
 
-def run_experiment(dataset: str, dataset_id: int, model_name: str, epochs: int, batch_size: int, docs: Dict) -> Tuple[
-    Dict, float]:
+def run_experiment(dataset: str, dataset_id: int, model_name: str, epochs: int, 
+                   batch_size: int, docs: Dict = None) -> Tuple[Dict, float]:
     train_config, eval_config = config.get_config(dataset, dataset_id, model_name, epochs, docs)
 
     logger.info(f'Train model ({model_name})')
@@ -35,18 +35,19 @@ def run_experiment(dataset: str, dataset_id: int, model_name: str, epochs: int, 
 @click.option('--job-dir', type=str)
 @click.option('--bucket-name', type=str)
 @click.option('--env', type=str)
-@click.option('--dataset', type=str, default='cookpad')
+@click.option('--dataset', type=str, default='pm19')
 @click.option('--dataset-id', type=str, default='large')
 @click.option('--model-name', type=str, default='nrmf_simple_query')
 @click.option('--epochs', type=int, default=1)
 @click.option('--batch-size', type=int, default=2048)
-def main(job_dir: str, bucket_name: str, env: str, dataset: str, dataset_id: str, model_name: str, epochs: int,
-         batch_size: int):
+def main(job_dir: str, bucket_name: str, env: str, dataset: str, dataset_id: str, 
+         model_name: str, epochs: int, batch_size: int):
+
     logger.add(sys.stdout, format='{time} {level} {message}')
     log_filepath = f'{project_dir}/logs/{int(time())}.log'
     logger.add(log_filepath)
 
-    if dataset not in ['cookpad']:
+    if dataset not in ['cookpad', 'pm19']:
         raise ValueError(f'Unknown dataset is specified: {dataset}')
 
     if env == 'cloud':
@@ -82,8 +83,9 @@ def main(job_dir: str, bucket_name: str, env: str, dataset: str, dataset_id: str
         if dataset == 'cookpad':
             filepaths.append('data/raw/recipes.json')
         else:
-            # Append appropriate files to the path list
-            pass
+            filepaths.append(f'data/raw/{dataset}-docs.json')
+            filepaths.append(f'data/raw/{dataset}-train.csv')
+
         for filepath in filepaths:
             source = filepath
             destination = f'{project_dir}/{source}'
@@ -95,7 +97,7 @@ def main(job_dir: str, bucket_name: str, env: str, dataset: str, dataset_id: str
         from src.data.cookpad.recipes import load_raw_recipes
         docs = load_raw_recipes()
     else:
-        pass
+        docs = None
 
     results = []
     for dataset_id in dataset_ids:

@@ -18,6 +18,7 @@ project_dir = Path(__file__).resolve().parents[3]
 class DataProcessor(abc.ABC):
     def __init__(self, docs: Dict = None, dataset_size: str = None, num_words: int = 200000,
                  max_negatives: int = 10):
+                 
         if not docs:
             if dataset_size:
                 self.docs = load_recipes(dataset_size)
@@ -49,6 +50,8 @@ class DataProcessor(abc.ABC):
     def listwise_to_pairs(self, listwise_filename: str) -> DataFrame:
         with open(f'{project_dir}/data/processed/{listwise_filename}', 'rb') as file:
             dataset = pickle.load(file)
+
+        print(f'dataset\n {dataset}')
 
         rows = []
         for example in tqdm(dataset):
