@@ -17,22 +17,17 @@ class NRMFSimpleQuery(BaseModel):
 
     def build(self):
         query_input = self.new_query_input()
-        title_input = self.new_title_input()
-        ingredients_input = self.new_ingredients_input()
-        description_input = self.new_description_input()
-        country_input = self.new_country_input()
+        background_input = self.new_field_input('background')
+        conclusions_input = self.new_field_input('conclusions')
         docno_input = self.new_docno_input()
-        inputs = [query_input, title_input, ingredients_input, description_input, country_input, docno_input]
+        inputs = [query_input, background_input, conclusions_input, docno_input]
 
         word_embedding = layers.Embedding(self.total_words, self.embedding_dim, name='word_embedding')
-        query = layers.GlobalMaxPooling1D()(word_embedding(query_input))
-        title = layers.GlobalMaxPooling1D()(word_embedding(title_input))
-        ingredients = layers.GlobalMaxPooling1D()(word_embedding(ingredients_input))
-        description = layers.GlobalMaxPooling1D()(word_embedding(description_input))
-        country = layers.Embedding(self.total_countries, self.embedding_dim)(country_input)
-        country = tf.reshape(country, shape=(-1, self.embedding_dim))
+        query       = layers.GlobalMaxPooling1D()(word_embedding(query_input))
+        background  = layers.GlobalMaxPooling1D()(word_embedding(background_input))
+        conclusions = layers.GlobalMaxPooling1D()(word_embedding(conclusions_input))
 
-        fields = [title, ingredients, description, country]
+        fields = [background, conclusions]
 
         interactions = []
         for field in fields:
@@ -50,11 +45,8 @@ class NRMFSimpleQuery(BaseModel):
     def new_query_input(self, size=10):
         return tf.keras.Input(shape=(size,), name='query')
 
-    def new_title_input(self, size=20):
-        return tf.keras.Input(shape=(size,), name='title')
-
-    def new_ingredients_input(self, size=300):
-        return tf.keras.Input(shape=(size,), name='ingredients')
+    def new_field_input(self, name, size=300):
+        return tf.keras.Input(shape=(size,), name=name)
 
     def new_body_input(self, size=12000):
         return tf.keras.Input(shape=(size,), name='body')

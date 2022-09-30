@@ -4,11 +4,12 @@ from pathlib import Path
 from typing import Optional, Dict, Tuple, List
 
 import numpy as np
-from pandas import DataFrame, read_csv
+from pandas import DataFrame, read_csv, merge
 from sklearn.preprocessing import LabelEncoder
 from tensorflow.keras.preprocessing.sequence import pad_sequences
 from tensorflow.keras.preprocessing.text import Tokenizer
 from tqdm import tqdm
+from loguru import logger
 
 from src.data.cookpad.preprocessors import DataProcessor
 from src.data.pm19.docs import load_raw_docs
@@ -48,25 +49,32 @@ class PM19DataProcessor(DataProcessor):
         # ignores the filename and return the pm csv
         return read_csv(f'{project_dir}/data/raw/training-queries.csv.gz')
 
-
     def process_df(self, df: DataFrame) -> None:
+        logger.info(f'df to process (df.shape, df.columns): {df.shape}, {df.columns} ')
+
         df['docno'] = df['docno'].astype(np.int64)
-        df['qid'] = df['qid'].astype(str)  #TODO get query
-        df['nlmcategorybackground'] = df['docno'].apply(lambda docno: self.docs[docno]['nlmcategorybackground']).astype(str)
-        df['nlmcategoryconclusions'] = df['docno'].apply(lambda docno: self.docs[docno]['nlmcategoryconclusions'])
+        df['background'] = df['docno'].apply(lambda docno: self.docs[docno]['nlmcategorybackground']).astype(str)
+        df['conclusions'] = df['docno'].apply(lambda docno: self.docs[docno]['nlmcategoryconclusions'])
         df['label'] = df['label'].astype(float)
 
+        queries = read_csv(f'{project_dir}/data/raw/pm19-queries.csv')
+        df = df.merge(queries, on='qid', how='left')
+        df['query'] = df['query'].astype(str)
+
+        logger.info(f'Processed df (shape, head): {df.shape}\n{df.head(1)} ') #TODO why log twice?
+        return df
+
     def fit(self, df: DataFrame) -> None:
-        self.process_df(df)
+        df = self.process_df(df)
 
         self.encoder['docno'] = LabelEncoder()
         docnos = [docno for docno in self.docs] + [-1]
         self.encoder['docno'].fit(docnos)
 
         sentences = set()
-        sentences |= set(df['qid']) # query
-        sentences |= set(df['nlmcategorybackground'])
-        sentences |= set(df['nlmcategoryconclusions'])
+        sentences |= set(df['query'])
+        sentences |= set(df['background'])
+        sentences |= set(df['conclusions'])
 
         self.tokenizer = Tokenizer(
             oov_token='<OOV>',
@@ -77,62 +85,43 @@ class PM19DataProcessor(DataProcessor):
         del sentences
 
     def process_batch(self, df: DataFrame) -> Tuple[Dict, List[int]]:
-        df = df.copy()
-        self.process_df(df)
+        df = self.process_df(df)
 
         df['docno'] = df['docno'].apply(lambda c: c if c in self.encoder['docno'].classes_ else -1)
         df['docno'] = self.encoder['docno'].transform(df['docno'])
         docno = df['docno'].to_numpy()
 
         df['query'] = self.tokenizer.texts_to_sequences(df['query'].tolist())
-        df['title'] = self.tokenizer.texts_to_sequences(df['title'].tolist())
-        df['ingredients'] = self.tokenizer.texts_to_sequences(df['ingredients'].tolist())
-        df['description'] = self.tokenizer.texts_to_sequences(df['description'].tolist())
-
-        df['author'] = df['author'].apply(lambda c: c if c in self.encoder['author'].classes_ else '')
-        df['author'] = self.encoder['author'].transform(df['author'])
-
-        df['country'] = df['country'].apply(lambda c: c if c in self.encoder['country'].classes_ else '')
-        df['country'] = self.encoder['country'].transform(df['country'])
+        df['background'] = self.tokenizer.texts_to_sequences(df['background'].tolist())
+        df['conclusions'] = self.tokenizer.texts_to_sequences(df['conclusions'].tolist())
 
         query = df['query'].tolist()
         query = pad_sequences(
             query,
             padding='post',
             truncating='post',
-            maxlen=6
+            maxlen=10   #TODO map direct to the model input spec
         )
-        title = df['title'].tolist()
-        title = pad_sequences(
-            title,
-            padding='post',
-            truncating='post',
-            maxlen=20
-        )
-        ingredients = df['ingredients'].tolist()
-        ingredients = pad_sequences(
-            ingredients,
+        background = df['background'].tolist()
+        background = pad_sequences(
+            background,
             padding='post',
             truncating='post',
             maxlen=300
         )
-        description = df['description'].tolist()
-        description = pad_sequences(
-            description,
+        conclusions = df['conclusions'].tolist()
+        conclusions = pad_sequences(
+            conclusions,
             padding='post',
             truncating='post',
-            maxlen=100
+            maxlen=300
         )
-        author = df['author'].to_numpy()
-        country = df['country'].to_numpy()
+        
         label = df['label'].to_numpy()
 
         return {
             'docno': docno,
             'query': query,
-            'title': title,
-            'ingredients': ingredients,
-            'description': description,
-            'author': author,
-            'country': country
+            'background': background,
+            'conclusions': conclusions,
         }, label

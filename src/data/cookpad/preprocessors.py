@@ -51,7 +51,7 @@ class DataProcessor(abc.ABC):
         with open(f'{project_dir}/data/processed/{listwise_filename}', 'rb') as file:
             dataset = pickle.load(file)
 
-        print(f'dataset\n {dataset}')
+        print(f'dataset\n {dataset}')  # testing cookpad minimum config
 
         rows = []
         for example in tqdm(dataset):

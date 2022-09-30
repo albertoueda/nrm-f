@@ -17,7 +17,6 @@ def build_training_docs(df: pd.DataFrame):
     
     with open('../data/raw/docs.json', 'w') as f:
         json.dump(df.to_dict(orient='index'), f, sort_keys=True, indent=4)
-#
 
     logger.info(f'docs: {df.head(1)}, shape: {df.shape}')
 
@@ -55,12 +54,23 @@ def build_training_queries(df):
                 negatives = negatives[max_negatives:] 
     
     df = pd.DataFrame(rows)
-    logger.info(f'queries: {df.head(1)}, shape: {df.shape}')
+    logger.info(f'queries: {df.head(2)}, shape: {df.shape}')
     df.to_csv('../data/raw/training-queries.csv.gz', index=False)
 
     # with open(f'/home/u/git/feature-interactions-in-document-ranking/data/raw/listwise.pm19.large.train.pkl', 'wb') as file:
     #     pickle.dump(df, file)
 
+
+def build_query_list(df: pd.DataFrame):
+    df = df.drop_duplicates('docno')
+    df = df.drop(columns=['qid', 'query'])
+    df = df.set_index('docno', drop=False)
+    
+    with open('../data/raw/docs.json', 'w') as f:
+        json.dump(df.to_dict(orient='index'), f, sort_keys=True, indent=4)
+#
+
+    logger.info(f'docs: {df.head(1)}, shape: {df.shape}')
 
 @click.command()
 @click.option('--dataset_id', type=str, default='pm19')
