@@ -19,9 +19,9 @@ from src.training import train_ranking_model
 project_dir = Path(__file__).resolve().parents[1]
 
 
-def run_experiment(dataset: str, dataset_id: int, model_name: str, epochs: int, 
+def run_experiment(dataset: str, dataset_size: int, model_name: str, epochs: int, 
                    batch_size: int, docs: Dict = None) -> Tuple[Dict, float]:
-    train_config, eval_config = config.get_config(dataset, dataset_id, model_name, epochs, docs)
+    train_config, eval_config = config.get_config(dataset, dataset_size, model_name, epochs, docs)
 
     logger.info(f'Train model ({model_name})')
     model, history = train_ranking_model(train_config, batch_size)
@@ -36,11 +36,11 @@ def run_experiment(dataset: str, dataset_id: int, model_name: str, epochs: int,
 @click.option('--bucket-name', type=str)
 @click.option('--env', type=str)
 @click.option('--dataset', type=str, default='pm19')
-@click.option('--dataset-id', type=str, default='large')
+@click.option('--dataset-size', type=str, default='sample')
 @click.option('--model-name', type=str, default='nrmf_simple_query')
 @click.option('--epochs', type=int, default=1)
 @click.option('--batch-size', type=int, default=2048)
-def main(job_dir: str, bucket_name: str, env: str, dataset: str, dataset_id: str, 
+def main(job_dir: str, bucket_name: str, env: str, dataset: str, dataset_size: str, 
          model_name: str, epochs: int, batch_size: int):
 
     logger.add(sys.stdout, format='{time} {level} {message}')
@@ -63,11 +63,11 @@ def main(job_dir: str, bucket_name: str, env: str, dataset: str, dataset_id: str
     else:
         job_name = 'chief'
 
-    if '-' in dataset_id:
-        start, stop = [int(n) for n in dataset_id.split('-')]
+    if '-' in dataset_size:
+        start, stop = [int(n) for n in dataset_size.split('-')]
         dataset_ids = range(start, stop + 1)
     else:
-        dataset_ids = [dataset_id] #[int(dataset_id)]
+        dataset_ids = [dataset_size] #[int(dataset_id)]
 
     if env == 'cloud':
         logger.info('Download data')
@@ -92,7 +92,7 @@ def main(job_dir: str, bucket_name: str, env: str, dataset: str, dataset_id: str
             logger.info(f'Download {source} to {destination}')
             bucket.download(source, destination)
 
-    logger.info(f'Load docs')
+    logger.info(f'Loading docs')
     if dataset == 'cookpad':
         from src.data.cookpad.recipes import load_raw_recipes
         docs = load_raw_recipes()
@@ -102,7 +102,9 @@ def main(job_dir: str, bucket_name: str, env: str, dataset: str, dataset_id: str
     results = []
     for dataset_id in dataset_ids:
         logger.info(f'Run an experiment on {model_name} with dataset: {dataset}.{dataset_id}')
+
         history, ndcg_score = run_experiment(dataset, dataset_id, model_name, epochs, batch_size, docs)
+        
         results.append({
             'dataset_id': dataset_id,
             'model': model_name,

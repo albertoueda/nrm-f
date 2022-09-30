@@ -22,6 +22,7 @@ class DataProcessor(abc.ABC):
         if not docs:
             if dataset_size:
                 self.docs = load_recipes(dataset_size)
+                self.dataset_size = dataset_size
             else:
                 self.docs = load_raw_recipes()
         else:

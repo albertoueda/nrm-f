@@ -1,15 +1,14 @@
 from typing import Tuple
 
 from src.config.base_configs import TrainConfig, EvalConfig
-from src.data.cookpad.preprocessors import ConcatDataProcessor
-from src.data.cookpad.preprocessors import DataProcessor
+from src.data.pm19.preprocessors import PM19DataProcessor
 from src.models.pm import naive, nrmf
 
-def nrmf_simple_query_config(dataset_id: str, epochs: int, data_processor: DataProcessor) -> Tuple[
-    TrainConfig, EvalConfig]:
+def nrmf_simple_query_config(dataset_id: str, dataset_size: str, epochs: int, 
+                             data_processor: PM19DataProcessor) -> Tuple[TrainConfig, EvalConfig]:
 
     if not data_processor:
-        data_processor = ConcatDataProcessor()
+        data_processor = PM19DataProcessor(dataset_size=dataset_size)
 
     train_config = TrainConfig(
         dataset_id=dataset_id,

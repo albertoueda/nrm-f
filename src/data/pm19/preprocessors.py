@@ -4,7 +4,7 @@ from pathlib import Path
 from typing import Optional, Dict, Tuple, List
 
 import numpy as np
-from pandas import DataFrame, read_csv, merge
+from pandas import DataFrame, read_csv
 from sklearn.preprocessing import LabelEncoder
 from tensorflow.keras.preprocessing.sequence import pad_sequences
 from tensorflow.keras.preprocessing.text import Tokenizer
@@ -12,22 +12,20 @@ from tqdm import tqdm
 from loguru import logger
 
 from src.data.cookpad.preprocessors import DataProcessor
-from src.data.pm19.docs import load_raw_docs
+from src.dataset import load_raw_docs
 
 project_dir = Path(__file__).resolve().parents[3]
 
 class PM19DataProcessor(DataProcessor):
     
-    def __init__(self, docs: Dict = None, dataset_size: str = None, num_words: int = 200000,
-                 max_negatives: int = 10):
-                 
+    #TODO link max negatives vars
+    def __init__(self, docs: Dict = None, dataset_size: str = 'sample', 
+                 num_words: int = 200000, max_negatives: int = 10):
         if not docs:            
             self.docs = load_raw_docs()
         else:
-            self.docs = docs
-        
+            self.docs = docs        
         super().__init__(self.docs, dataset_size, num_words, max_negatives)
-
 
     @property
     def doc_id_encoder(self) -> LabelEncoder:
@@ -47,17 +45,20 @@ class PM19DataProcessor(DataProcessor):
 
     def listwise_to_pairs(self, listwise_filename: str) -> DataFrame:
         # ignores the filename and return the pm csv
-        return read_csv(f'{project_dir}/data/raw/training-queries.csv.gz')
+        #TODO gz
+        self.dataset_size = 'sample'
+        return read_csv(f'{project_dir}/data/raw/pm19-train-' + self.dataset_size + '.csv.gz')
 
     def process_df(self, df: DataFrame) -> None:
         logger.info(f'df to process (df.shape, df.columns): {df.shape}, {df.columns} ')
+        logger.info(f'docs loaded: { len(self.docs) }')
 
         df['docno'] = df['docno'].astype(np.int64)
         df['background'] = df['docno'].apply(lambda docno: self.docs[docno]['nlmcategorybackground']).astype(str)
-        df['conclusions'] = df['docno'].apply(lambda docno: self.docs[docno]['nlmcategoryconclusions'])
+        df['conclusions'] = df['docno'].apply(lambda docno: self.docs[docno]['nlmcategoryconclusions']).astype(str)
         df['label'] = df['label'].astype(float)
 
-        queries = read_csv(f'{project_dir}/data/raw/pm19-queries.csv')
+        queries = read_csv('../data/raw/pm19-queries.csv')
         df = df.merge(queries, on='qid', how='left')
         df['query'] = df['query'].astype(str)
 

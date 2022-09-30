@@ -4,6 +4,7 @@ from typing import Type
 from src.data.cookpad.preprocessors import DataProcessor
 from src.models.base_model import BaseModel
 
+#TODO review listwise dataclass properties
 
 @dataclass
 class TrainConfig:
@@ -16,9 +17,8 @@ class TrainConfig:
     verbose: int = 1
 
     def __post_init__(self):
-        self.dataset = f'listwise.{self.dataset_id}'
+        self.dataset = f'{self.dataset_id}'
         self.dataset_processor_filename = f'concat_data_processor.{self.dataset_id}'
-
 
 @dataclass
 class EvalConfig:
@@ -29,5 +29,5 @@ class EvalConfig:
     verbose: int = 1
 
     def __post_init__(self):
-        self.dataset = f'listwise.{self.dataset_id}'
+        self.dataset = f'{self.dataset_id}'
         self.dataset_processor_filename = f'concat_data_processor.{self.dataset_id}'

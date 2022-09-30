@@ -53,16 +53,17 @@ def predict(model, dataset, data_processor, verbose=1) -> float:
     ndcg_score = round(np.mean(ndcg_scores), 4)
     return ndcg_score
 
-def predict_pm(model, df, data_processor, verbose=1) -> float:
+def predict_pm(model, df:DataFrame, data_processor, verbose=1) -> float:
+    if df.empty: 
+        raise ValueError('Testing data is empty!')
+
     ndcg_scores = []
-    
     # queries = read_csv(f'{project_dir}/data/raw/pm19-queries.csv', index_col='qid')
     # df = df.merge(queries, how='left', left_on='qid', right_index=True)
 
     qids = df.qid.unique()
 
     for qid in qids:
-        print(f'---{qid}, {df.head(1)}')
         logger.info(f'Evaluating qid {qid}...')
         x, y = data_processor.process_batch(df[df.qid == qid])
 
@@ -71,6 +72,11 @@ def predict_pm(model, df, data_processor, verbose=1) -> float:
         df['pred'] = preds
         y_true = df['label'].tolist()
         y_pred = df['pred'].tolist()
+
+        if df.shape[0] < 30:
+            logger.info(f'y_true: {y_true}')
+            logger.info(f'y_pred: {[int(y) for y in y_pred]}')
+
         ndcg_scores.append(metrics.normalized_discount_cumulative_gain(y_true, y_pred))
 
     ndcg_score = round(np.mean(ndcg_scores), 4)
@@ -99,8 +105,8 @@ def evaluate_ranking_model(config: EvalConfig, model: BaseModel = None) -> float
             val_dataset = pickle.load(file)
         ndcg_score = predict(model, val_dataset, data_processor, config.verbose)
     else:
-        val_dataset = read_csv(f'{project_dir}/data/raw/training-queries.csv.gz')
-        ndcg_score = predict_pm(model, val_dataset, data_processor, config.verbose)
+        test_dataset = read_csv(f'{project_dir}/data/raw/pm19-test-sample.csv')  #TODO
+        ndcg_score = predict_pm(model, test_dataset, data_processor, config.verbose)
     
     logger.info(f'NDCG: {ndcg_score}')
 

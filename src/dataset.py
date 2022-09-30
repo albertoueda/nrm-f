@@ -1,8 +1,7 @@
+from typing import Set, Dict
 import pandas as pd
 import click
-import json
 from tqdm import tqdm
-import pickle
 from loguru import logger
 
 # import sys
@@ -10,35 +9,31 @@ from loguru import logger
 # sys.path.append('/home/u/git/phd-alberto-ueda/src') 
 # from utils import io_utils
 
-def build_training_docs(df: pd.DataFrame):
+def build_docs(df: pd.DataFrame, dataset_size:str = 'sample'):
     df = df.drop_duplicates('docno')
     df = df.drop(columns=['qid', 'query'])
-    df = df.set_index('docno', drop=False)
-    
-    with open('../data/raw/docs.json', 'w') as f:
-        json.dump(df.to_dict(orient='index'), f, sort_keys=True, indent=4)
 
+    df.to_csv('../data/raw/pm19-docs-' + dataset_size + '.csv.gz', index=False)
     logger.info(f'docs: {df.head(1)}, shape: {df.shape}')
 
-def build_training_queries(df):
-    max_negatives = 5
+def build_training_queries(df, train_qids, max_negatives=5, dataset_size:str = 'sample'):
     rows = []
 
     for qid, group in tqdm(df.groupby('qid')):
-        logger.info(f'Processing query {qid}...')
+        if qid not in train_qids:
+            continue 
 
+        logger.info(f'Processing query {qid}...')
         positives = []
         negatives = []
 
         for index, row in group.iterrows():
             label = 1 if row['label'] > 0 else 0
-
             instance = {
                 'qid': row['qid'],
                 'docno': row['docno'],
                 'label': label
             }
-
             if label > 0:
                 positives.append(instance)
             else:
@@ -54,39 +49,62 @@ def build_training_queries(df):
                 negatives = negatives[max_negatives:] 
     
     df = pd.DataFrame(rows)
-    logger.info(f'queries: {df.head(2)}, shape: {df.shape}')
-    df.to_csv('../data/raw/training-queries.csv.gz', index=False)
+    logger.info(f'training queries: shape { df.shape }\n{ df.head(2) }')
+    df.to_csv('../data/raw/pm19-train-' + dataset_size + '.csv.gz', index=False)
 
-    # with open(f'/home/u/git/feature-interactions-in-document-ranking/data/raw/listwise.pm19.large.train.pkl', 'wb') as file:
-    #     pickle.dump(df, file)
+def build_test_queries(df, test_qids, dataset_size:str = 'sample'):
+    df = df[['qid', 'docno', 'label']].copy()
+    df = df[df.qid.isin(test_qids)]
 
+    logger.info(f'test queries: shape { df.shape }\n{ df.head(2) }')
+    df[:20].to_csv('../data/raw/pm19-test-sample.csv', index=False)
+    df.to_csv('../data/raw/pm19-test-' + dataset_size + '.csv.gz', index=False)
 
 def build_query_list(df: pd.DataFrame):
-    df = df.drop_duplicates('docno')
-    df = df.drop(columns=['qid', 'query'])
-    df = df.set_index('docno', drop=False)
-    
-    with open('../data/raw/docs.json', 'w') as f:
-        json.dump(df.to_dict(orient='index'), f, sort_keys=True, indent=4)
-#
+    df = df[['qid', 'query']].drop_duplicates()
+    df.to_csv('../data/raw/pm19-queries.csv', index=False)
+    logger.info(f'Total of queries listed: { df.shape[0] }\n{ df.head(2) }')
 
-    logger.info(f'docs: {df.head(1)}, shape: {df.shape}')
+
+def load_raw_docs(dataset_size='full') -> Dict:
+    docs = pd.read_csv('../data/raw/pm19-docs-' + dataset_size + '.csv.gz')
+    docs = docs.drop(columns=['rank_init', 'label'])
+    docs = docs.set_index('docno', drop=False)
+
+    return docs.to_dict(orient='index')
+
 
 @click.command()
-@click.option('--dataset_id', type=str, default='pm19')
-@click.option('--data_dir',   type=str, default='~/data/runs-pm17-19-gla/')
-@click.option('--nrows',      type=int, default=20)
-def setup_training(dataset_id: str, data_dir: str, nrows: int):
+@click.option('--dataset', type=str, default='pm19')
+@click.option('--dataset_size', type=str, default='full')
+@click.option('--source_df',   type=str, default='~/data/runs-pm17-19-gla/df-pm17-19-THE-ONE-III.csv.gz')
+@click.option('--max_negatives', type=int, default=5)
+@click.option('--nrows',      type=int, default=None)
+def setup_training(dataset: str, dataset_size: str, source_df: str, max_negatives: int, nrows: int):
+    """
+    Generates the appropriate training and validation data for TREC tracks PM19 and COVID.
+        $  python dataset.py
+        $  python dataset.py --dataset_size=sample --nrows=20
+    """
 
     section_cols = ['nlmcategorybackground', 'nlmcategorymethods', 'nlmcategoryresults', 'nlmcategoryconclusions']
     text_cols = ['articletitle', 'abstracttext_orig', 'abstracttext'] + section_cols
+    usecols = ['qid', 'query', 'docno', 'rank_init'] + text_cols + ['label']
 
-    df = pd.read_csv(data_dir + 'df-pm17-19-THE-ONE-III.csv.gz', nrows=nrows, 
-                     usecols = ['qid', 'query', 'docno', 'rank_init'] + text_cols + ['label'])
+    if dataset == 'pm19':
+        df = pd.read_csv(source_df, nrows=nrows, usecols=usecols)
+        train_qids = [int(str(y) + str(i)) for y in ['2017', '2018'] for i in range(1,50)]
+        test_qids = [int(str(y) + str(i)) for y in ['2019'] for i in range(1,50)]
 
-    build_training_docs(df)
-    build_training_queries(df)
+    elif dataset == 'covid':
+        pass
+    else:
+        raise ValueError(f"Invalid dataset type was given: {dataset}")
 
+    # build_query_list(df)
+    # build_docs(df, dataset_size)
+    # build_training_queries(df, train_qids, max_negatives, dataset_size)
+    build_test_queries(df, test_qids, dataset_size)
 
 if __name__ == '__main__':
     setup_training()

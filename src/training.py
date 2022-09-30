@@ -28,7 +28,6 @@ def train_ranking_model(config: TrainConfig, batch_size: int) -> Dict:
 
     train_df = data_processor.listwise_to_pairs(f'{config.dataset}.train.pkl')
     val_df = data_processor.listwise_to_pairs(f'{config.dataset}.val.pkl')
-
     logger.info(f'train_df.columns: {train_df.columns}, train_df.shape: {train_df.shape}')
 
     data_processor.fit(train_df)
