@@ -2,6 +2,7 @@ import abc
 import pickle
 from pathlib import Path
 from typing import Optional, Dict, Tuple, List
+from loguru import logger
 
 import numpy as np
 from pandas import DataFrame, read_csv
@@ -25,6 +26,8 @@ class PM19DataProcessor(DataProcessor):
             self.docs = load_raw_docs()
         else:
             self.docs = docs        
+            
+        self.queries = read_csv('../data/raw/pm19-queries.csv')
         super().__init__(self.docs, dataset_size, num_words, max_negatives)
 
     @property
@@ -43,26 +46,31 @@ class PM19DataProcessor(DataProcessor):
     def total_countries(self) -> int:
         pass
 
+    # Overwrited to return pairs file directly
     def listwise_to_pairs(self, listwise_filename: str) -> DataFrame:
-        # ignores the filename and return the pm csv
-        #TODO gz
-        self.dataset_size = 'sample'
-        return read_csv(f'{project_dir}/data/raw/pm19-train-' + self.dataset_size + '.csv.gz')
+
+        if 'train' in listwise_filename:
+            filename = f'{project_dir}/data/raw/pm19-train-' + self.dataset_size + '.csv.gz'
+            logger.info(f'-------------- Read:\n{filename}')
+            return read_csv(filename)
+        else:
+            filename = f'{project_dir}/data/raw/pm19-val-' + self.dataset_size + '.csv.gz'
+            logger.info(f'-------------- Read:\n{filename}')
+            return read_csv(filename)
 
     def process_df(self, df: DataFrame) -> None:
-        logger.info(f'df to process (df.shape, df.columns): {df.shape}, {df.columns} ')
-        logger.info(f'docs loaded: { len(self.docs) }')
+        # logger.info(f'df to process (df.shape, df.columns): {df.shape}, {df.columns} ')
+        # logger.info(f'docs loaded: { len(self.docs) }')
 
         df['docno'] = df['docno'].astype(np.int64)
         df['background'] = df['docno'].apply(lambda docno: self.docs[docno]['nlmcategorybackground']).astype(str)
         df['conclusions'] = df['docno'].apply(lambda docno: self.docs[docno]['nlmcategoryconclusions']).astype(str)
         df['label'] = df['label'].astype(float)
 
-        queries = read_csv('../data/raw/pm19-queries.csv')
-        df = df.merge(queries, on='qid', how='left')
+        df = df.merge(self.queries, on='qid', how='left')
         df['query'] = df['query'].astype(str)
 
-        logger.info(f'Processed df (shape, head): {df.shape}\n{df.head(1)} ') #TODO why log twice?
+        # logger.debug(f'Processed df (shape, head): {df.shape}\n{df.head(1)} ') 
         return df
 
     def fit(self, df: DataFrame) -> None:

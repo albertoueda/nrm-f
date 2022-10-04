@@ -58,9 +58,6 @@ def predict_pm(model, df:DataFrame, data_processor, verbose=1) -> float:
         raise ValueError('Testing data is empty!')
 
     ndcg_scores = []
-    # queries = read_csv(f'{project_dir}/data/raw/pm19-queries.csv', index_col='qid')
-    # df = df.merge(queries, how='left', left_on='qid', right_index=True)
-
     qids = df.qid.unique()
 
     for qid in qids:
@@ -73,9 +70,8 @@ def predict_pm(model, df:DataFrame, data_processor, verbose=1) -> float:
         y_true = df['label'].tolist()
         y_pred = df['pred'].tolist()
 
-        if df.shape[0] < 30:
-            logger.info(f'y_true: {y_true}')
-            logger.info(f'y_pred: {[int(y) for y in y_pred]}')
+        logger.info(f'y_true: {y_true[:20]}')
+        logger.info(f'y_pred: {[round(y) for y in y_pred[:20]]}')
 
         ndcg_scores.append(metrics.normalized_discount_cumulative_gain(y_true, y_pred))
 
@@ -83,10 +79,11 @@ def predict_pm(model, df:DataFrame, data_processor, verbose=1) -> float:
     return ndcg_score
 
 
-def evaluate_ranking_model(config: EvalConfig, model: BaseModel = None) -> float:
+def evaluate_ranking_model(config: EvalConfig, model: BaseModel = None, 
+                           dataset_size: str = 'sample') -> float:
     if not model:
         logger.info('Load model')
-        filepath = f'{project_dir}/models/{config.model_name}.h5'
+        filepath = f'{project_dir}/models/{config.dataset_id}.{config.model_name}.h5'
         custom_objects = {
             'cross_entropy_loss': pairwise_losses.cross_entropy_loss,
             'WeightedQueryFieldInteraction': WeightedQueryFieldInteraction,
@@ -97,15 +94,15 @@ def evaluate_ranking_model(config: EvalConfig, model: BaseModel = None) -> float
         model = keras.models.load_model(filepath, custom_objects=custom_objects)
 
     logger.info('Load val dataset')
-    with open(f'{project_dir}/models/{config.data_processor_filename}.pkl', 'rb') as file: #TODO model is ''
+    with open(f'{project_dir}/models/{config.data_processor_filename}.pkl', 'rb') as file:
         data_processor = pickle.load(file)
 
-    if 'cookpad' in config.dataset: #TODO
-        with open(f'{project_dir}/data/processed/{config.dataset}.val.pkl', 'rb') as file: #TODO cookpad
+    if 'cookpad' in config.dataset:
+        with open(f'{project_dir}/data/processed/{config.dataset}.val.pkl', 'rb') as file:
             val_dataset = pickle.load(file)
         ndcg_score = predict(model, val_dataset, data_processor, config.verbose)
     else:
-        test_dataset = read_csv(f'{project_dir}/data/raw/pm19-test-sample.csv')  #TODO
+        test_dataset = read_csv(f'{project_dir}/data/raw/pm19-test-{dataset_size}.csv.gz')
         ndcg_score = predict_pm(model, test_dataset, data_processor, config.verbose)
     
     logger.info(f'NDCG: {ndcg_score}')

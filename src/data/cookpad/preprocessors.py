@@ -22,15 +22,16 @@ class DataProcessor(abc.ABC):
         if not docs:
             if dataset_size:
                 self.docs = load_recipes(dataset_size)
-                self.dataset_size = dataset_size
             else:
                 self.docs = load_raw_recipes()
         else:
             self.docs = docs
+            
         self.num_words: int = num_words
         self.tokenizer: Optional[Tokenizer] = None
         self.encoder: Dict[str, LabelEncoder] = {}
         self.max_negatives: int = max_negatives
+        self.dataset_size = dataset_size
 
     @property
     def doc_id_encoder(self) -> LabelEncoder:
@@ -49,6 +50,8 @@ class DataProcessor(abc.ABC):
         return len(self.encoder['country'].classes_)
 
     def listwise_to_pairs(self, listwise_filename: str) -> DataFrame:
+        logger.info('Transform examples into dataset')
+        
         with open(f'{project_dir}/data/processed/{listwise_filename}', 'rb') as file:
             dataset = pickle.load(file)
 

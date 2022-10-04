@@ -2,6 +2,7 @@ import gc
 import json
 import os
 import sys
+import warnings
 from pathlib import Path
 from time import time
 from typing import Dict, Tuple
@@ -16,8 +17,10 @@ from src.data.cloud_storage import CloudStorage
 from src.evaluation import evaluate_ranking_model
 from src.training import train_ranking_model
 
-project_dir = Path(__file__).resolve().parents[1]
+from pandas.core.common import SettingWithCopyWarning
 
+project_dir = Path(__file__).resolve().parents[1]
+warnings.simplefilter(action="ignore", category=SettingWithCopyWarning)
 
 def run_experiment(dataset: str, dataset_size: int, model_name: str, epochs: int, 
                    batch_size: int, docs: Dict = None) -> Tuple[Dict, float]:
@@ -27,7 +30,7 @@ def run_experiment(dataset: str, dataset_size: int, model_name: str, epochs: int
     model, history = train_ranking_model(train_config, batch_size)
 
     logger.info('Evaluate model')
-    ndcg_score = evaluate_ranking_model(eval_config, model)
+    ndcg_score = evaluate_ranking_model(eval_config, model, dataset_size)
     return history, ndcg_score
 
 
@@ -43,7 +46,7 @@ def run_experiment(dataset: str, dataset_size: int, model_name: str, epochs: int
 def main(job_dir: str, bucket_name: str, env: str, dataset: str, dataset_size: str, 
          model_name: str, epochs: int, batch_size: int):
 
-    logger.add(sys.stdout, format='{time} {level} {message}')
+    # logger.add(sys.stdout, format='{time} {level} {message}')
     log_filepath = f'{project_dir}/logs/{int(time())}.log'
     logger.add(log_filepath)
 

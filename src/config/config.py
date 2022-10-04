@@ -1,6 +1,6 @@
 from typing import Dict, Tuple
 
-from src.config import cookpad, pm
+from src.config import cookpad, pm_config
 from src.config.base_configs import TrainConfig, EvalConfig
 
 def get_config(dataset: str, dataset_size: int, model_name: str, epochs: int, 
@@ -24,8 +24,11 @@ def get_config(dataset: str, dataset_size: int, model_name: str, epochs: int,
     elif dataset == 'pm19':
         from src.data.pm19.preprocessors import PM19DataProcessor
         data_processor = PM19DataProcessor(dataset_size=dataset_size)
+        print('===========', dataset_size, data_processor.dataset_size)
+
+
         train_config, eval_config = {
-            'nrmf_simple_query': pm.nrmf_simple_query_config,
+            'nrmf_simple_query': pm_config.nrmf_simple_query_config,
         }[model_name](dataset, dataset_size, epochs, data_processor)
         
     else:

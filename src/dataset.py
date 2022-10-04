@@ -1,4 +1,5 @@
 from typing import Set, Dict
+from sklearn.model_selection import train_test_split
 import pandas as pd
 import click
 from tqdm import tqdm
@@ -16,9 +17,9 @@ def build_docs(df: pd.DataFrame, dataset_size:str = 'sample'):
     df.to_csv('../data/raw/pm19-docs-' + dataset_size + '.csv.gz', index=False)
     logger.info(f'docs: {df.head(1)}, shape: {df.shape}')
 
-def build_training_queries(df, train_qids, max_negatives=5, dataset_size:str = 'sample'):
+def build_training_queries(df, train_qids, phase, dataset_size, max_negatives=5):
     rows = []
-
+ 
     for qid, group in tqdm(df.groupby('qid')):
         if qid not in train_qids:
             continue 
@@ -49,8 +50,8 @@ def build_training_queries(df, train_qids, max_negatives=5, dataset_size:str = '
                 negatives = negatives[max_negatives:] 
     
     df = pd.DataFrame(rows)
-    logger.info(f'training queries: shape { df.shape }\n{ df.head(2) }')
-    df.to_csv('../data/raw/pm19-train-' + dataset_size + '.csv.gz', index=False)
+    logger.info(f'training queries ({phase}): shape { df.shape }\n{ df.head(2) }')
+    df.to_csv(f'../data/raw/pm19-{phase}-{dataset_size}.csv.gz', index=False)
 
 def build_test_queries(df, test_qids, dataset_size:str = 'sample'):
     df = df[['qid', 'docno', 'label']].copy()
@@ -93,8 +94,9 @@ def setup_training(dataset: str, dataset_size: str, source_df: str, max_negative
 
     if dataset == 'pm19':
         df = pd.read_csv(source_df, nrows=nrows, usecols=usecols)
-        train_qids = [int(str(y) + str(i)) for y in ['2017', '2018'] for i in range(1,50)]
-        test_qids = [int(str(y) + str(i)) for y in ['2019'] for i in range(1,50)]
+        train_qids = [int(str(y) + str(i)) for y in ['2017', '2018'] for i in range(1,43)]  # 72 queries
+        val_qids = [int(str(y) + str(i)) for y in ['2018'] for i in range(43,51)]           #  8 queries
+        test_qids = [int(str(y) + str(i)) for y in ['2019'] for i in range(1,41)]           # 40 queries
 
     elif dataset == 'covid':
         pass
@@ -103,8 +105,9 @@ def setup_training(dataset: str, dataset_size: str, source_df: str, max_negative
 
     # build_query_list(df)
     # build_docs(df, dataset_size)
-    # build_training_queries(df, train_qids, max_negatives, dataset_size)
-    build_test_queries(df, test_qids, dataset_size)
+    # build_training_queries(df, train_qids, 'train', dataset_size, max_negatives)
+    # build_training_queries(df, val_qids  , 'val'  , dataset_size, max_negatives)
+    # build_test_queries(df, test_qids, dataset_size)
 
 if __name__ == '__main__':
     setup_training()

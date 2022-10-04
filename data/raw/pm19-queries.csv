@@ -1,2 +1,121 @@
 qid,query
 20171,Liposarcoma CDK4 Amplification
+20172,Colon cancer KRAS G13D BRAF V600E
+20173,Meningioma NF2 K322 AKT1E17K
+20174,Breast cancer FGFR1 Amplification PTEN Q171
+20175,Melanoma BRAF V600E CDKN2A Deletion
+20176,Melanoma NRAS Q61K
+20177,Lung cancer EGFR L858R
+20178,Lung cancer EML4 ALK Fusion transcript
+20179,Gastrointestinal stromal tumor KIT Exon 9 A502Y503dup
+201710,Lung adenocarcinoma KRAS G12C
+201711,Gastric cancer PIK3CA E545K
+201712,Colon cancer BRAF V600E
+201713,Cholangiocarcinoma BRCA2
+201714,Cholangiocarcinoma IDH1 R132H
+201715,Cervical cancer STK11
+201716,Pancreatic cancer CDKN2A
+201717,Prostate cancer PTEN Inactivating
+201718,Pancreatic cancer CDK6 Amplification
+201719,Colorectal cancer FGFR1 Amplification
+201720,Liposarcoma MDM2 Amplification
+201721,Lung adenocarcinoma ALK Fusion
+201722,Lung cancer ERBB2 Amplification
+201723,Breast cancer PTEN Loss
+201724,Lung cancer NTRK1
+201725,Lung adenocarcinoma MET Amplification
+201726,Breast cancer NRAS Amplification
+201727,Pancreatic adenocarcinoma KRAS TP53
+201728,Pancreatic ductal adenocarcinoma ERBB3
+201729,Ampullary carcinoma KRAS
+201730,Pancreatic adenocarcinoma RB1 TP53 KRAS
+20181,melanoma BRAF V600E
+20182,melanoma BRAF V600K
+20183,melanoma BRAF V600R
+20184,melanoma BRAF K601E
+20185,melanoma BRAF V600E PTEN loss of function
+20186,melanoma BRAF V600E NRAS Q61R
+20187,melanoma BRAF amplification
+20188,melanoma NRAS Q61R
+20189,melanoma NRAS Q61L
+201810,melanoma KIT L576P
+201811,melanoma KIT L576P KIT amplification
+201812,melanoma KIT K642E
+201813,melanoma KIT N822Y
+201814,melanoma KIT amplification
+201815,melanoma NF1 truncation
+201816,melanoma NTRK1 rearrangement
+201817,melanoma TP53 loss of function
+201818,melanoma tumor cells with 50 membranous PD L1 expression
+201819,melanoma tumor cells negative for PD L1 expression
+201820,melanoma high tumor mutational burden
+201821,melanoma extensive tumor infiltrating lymphocytes
+201822,melanoma no tumor infiltrating lymphocytes
+201823,melanoma PTEN loss of function
+201824,melanoma APC loss of function
+201825,melanoma high serum LDH levels
+201826,colorectal cancer NRAS
+201827,medullary thyroid carcinoma RET
+201828,neuroblastoma ALK
+201829,esophageal cancer EGFR
+201830,lung cancer ROS1
+201831,head and neck squamous cell carcinoma CDKN2A
+201832,leukemia ABL1
+201833,gastric cancer EGFR
+201834,sarcoma MDM2
+201835,breast cancer CDKN2A
+201836,lung cancer ERBB2
+201837,non small cell carcinoma MET
+201838,cholangiocarcinoma IDH1
+201839,anaplastic large cell lymphoma ALK
+201840,breast cancer ERBB2
+201841,papillary thyroid carcinoma NTRK1
+201842,glioblastoma CDK6
+201843,basal cell carcinoma PTCH1
+201844,glioma BRAF
+201845,thyroid cancer BRAF
+201846,lung cancer FGFR1
+201847,prostate cancer PTEN
+201848,adenoid cystic carcinoma KIT
+201849,acute myeloid leukemia IDH1
+201850,acute myeloid leukemia FLT3
+20191,melanoma BRAF E586K
+20192,cholangiocarcinoma BRAF V600E
+20193,prostate cancer ATM deletion
+20194,gastric cancer ERBB2 amplification
+20195,cervical cancer ERBB2 S310Y
+20196,non small cell lung cancer EGFR D770N
+20197,non small cell lung cancer EGFR T790M
+20198,bladder cancer FGFR3 S249C
+20199,gastrointestinal stromal tumor KIT exon 9 502 503 duplication
+201910,mucosal melanoma KIT L576P KIT amplification
+201911,gastrointestinal stromal tumor PDGFRA D842V
+201912,inflammatory myofibroblastic tumor RANBP2 ALK fusion
+201913,lung adenocarcinoma EZR ROS1 fusion
+201914,colon cancer MLH1 methylation suppression microsatellite instability
+201915,lung adenocarcinoma KRAS G12V high tumor mutational burden
+201916,papillary thyroid carcinoma BRAF V600E
+201917,glioblastoma IDH1 R132H
+201918,lung adenocarcinoma SND1 BRAF fusion
+201919,colon cancer ERBB2 amplification
+201920,pancreatic cancer BRCA2
+201921,gastrointestinal stromal tumor KIT V654A
+201922,colon cancer PIK3CA E545K
+201923,breast cancer AURKA amplification
+201924,cholangiocarcinoma PIK3CA 1047H
+201925,melanoma NRAS Q61H
+201926,squamous cell lung cancer FGFR1 amplification
+201927,non small cell lung cancer KRAS G12C
+201928,ovarian cancer BRCA1
+201929,chondrosarcoma IDH1
+201930,endometrial cancer PIK3R1
+201931,aortic aneurysm ACTA2
+201932,Loeys Dietz syndrome TGFBR2
+201933,long QT syndrome KCNQ1
+201934,Brugada syndrome SCN5A
+201935,familial hypercholesterolemia PCSK9
+201936,Li Fraumeni syndrome TP53
+201937,dilated cardiomyopathy LMNA
+201938,Peutz Jeghers syndrome STK11
+201939,long QT syndrome KCNH2
+201940,malignant hyperthermia RYR1
