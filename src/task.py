@@ -30,17 +30,18 @@ def run_experiment(dataset: str, dataset_size: int, model_name: str, epochs: int
     logger.info(f'Train model ({model_name})')
     model, history = train_ranking_model(train_config, batch_size)
 
-    ndcg_score = evaluate(eval_config, model, dataset_size)
+    run = evaluate(eval_config, model, dataset_size)
 
-    return history, ndcg_score
+    return history, run
 
+#TODO change nammes
 def evaluate(dataset: str, dataset_size: int, model_name: str, epochs: int, docs: Dict = None):
     _, eval_config = config.get_config(dataset, dataset_size, model_name, epochs, docs)
 
     logger.info('Evaluating model...')
-    ndcg_score = evaluate_ranking_model(eval_config, model=None, dataset_size=dataset_size)
+    eval_df = evaluate_ranking_model(eval_config, model=None, dataset_size=dataset_size)
 
-    return ndcg_score
+    return eval_df
 
 
 @click.command()
@@ -57,8 +58,8 @@ def main(job_dir: str, bucket_name: str, env: str, dataset: str, dataset_size: s
          model_name: str, epochs: int, batch_size: int):
 
     # logger.add(sys.stdout, format='{time} {level} {message}')
-    log_filepath = f'{project_dir}/logs/{int(time())}.log'
-    logger.add(log_filepath)
+    # log_filepath = f'{project_dir}/logs/{int(time())}.log'
+    # logger.add(log_filepath)
 
     if dataset not in ['cookpad', 'pm19']:
         raise ValueError(f'Unknown dataset is specified: {dataset}')
@@ -117,12 +118,15 @@ def main(job_dir: str, bucket_name: str, env: str, dataset: str, dataset_size: s
         logger.info(f'Run an experiment on {model_name} with dataset: {dataset}.{dataset_id}')
 
         if goal == 'evaluate':
-            ndcg_score = evaluate(dataset, dataset_id, model_name, epochs, docs)
-            results.append({
-                'dataset_id': dataset_id,
-                'model': model_name,
-                'ndcg': ndcg_score,
-            })
+            eval_df = evaluate(dataset, dataset_id, model_name, epochs, docs)
+            eval_df = eval_df.round(3)
+            eval_df['dataset_id'] = dataset_id
+            eval_df['model'] = model_name
+
+            filename = f'{project_dir}/data/results/{dataset}_{dataset_id}_{model_name}_results.csv'         
+            eval_df.set_index('name', drop=True).T.to_csv(filename, sep='\t')
+            logger.info(f'Results:\n  {eval_df.T}')
+
         else:
             history, ndcg_score = run_experiment(dataset, dataset_id, model_name, epochs, batch_size, docs)
             results.append({
@@ -134,9 +138,8 @@ def main(job_dir: str, bucket_name: str, env: str, dataset: str, dataset_size: s
 
         gc.collect()
 
-    results_df = DataFrame(results)
-    logger.info('\n' + str(results_df))
-    results_df.to_csv(f'{project_dir}/logs/{dataset}_{model_name}_results.csv', index=False)
+    # results_df = DataFrame(results)
+    # results_df.to_csv(f'{project_dir}/logs/{dataset}_{model_name}_results.csv', index=False)
 
     if env == 'cloud' and job_name == 'chief':
         for filepath in [

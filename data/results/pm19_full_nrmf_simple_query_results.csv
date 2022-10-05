@@ -1,0 +1,16 @@
+	nrmf_simple_query
+ndcg	0.144
+map	0.027
+P_10	0.045
+Rprec	0.035
+ndcg_cut_10	0.038
+ndcg_cut_100	0.037
+num_rel_ret	3836.0
+num_ret	40000.0
+P_20	0.041
+P_30	0.039
+P_100	0.035
+ndcg_cut_20	0.037
+ndcg_cut_30	0.036
+dataset_id	full
+model	nrmf_simple_query
