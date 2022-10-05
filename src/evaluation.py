@@ -62,13 +62,14 @@ def predict_pm(model, df:DataFrame, data_processor, verbose=1) -> float:
 
     for qid in qids:
         logger.info(f'Evaluating qid {qid}...')
-        x, y = data_processor.process_batch(df[df.qid == qid])
+        df_qid = df[df.qid == qid]
+        x, y = data_processor.process_batch(df_qid)
 
         dataset = tf.data.Dataset.from_tensor_slices((x, {'label': y})).batch(128)
         preds = model.predict(dataset, verbose=0)
-        df['pred'] = preds
-        y_true = df['label'].tolist()
-        y_pred = df['pred'].tolist()
+        df_qid['pred'] = preds
+        y_true = df_qid['label'].tolist()
+        y_pred = df_qid['pred'].tolist()
 
         logger.info(f'y_true: {y_true[:20]}')
         logger.info(f'y_pred: {[round(y) for y in y_pred[:20]]}')
@@ -82,8 +83,8 @@ def predict_pm(model, df:DataFrame, data_processor, verbose=1) -> float:
 def evaluate_ranking_model(config: EvalConfig, model: BaseModel = None, 
                            dataset_size: str = 'sample') -> float:
     if not model:
-        logger.info('Load model')
         filepath = f'{project_dir}/models/{config.dataset_id}.{config.model_name}.h5'
+        logger.info(f'Loading model\n  {filepath}...')
         custom_objects = {
             'cross_entropy_loss': pairwise_losses.cross_entropy_loss,
             'WeightedQueryFieldInteraction': WeightedQueryFieldInteraction,

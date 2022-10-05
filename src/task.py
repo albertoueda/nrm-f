@@ -11,6 +11,7 @@ import click
 import tensorflow as tf
 from loguru import logger
 from pandas import DataFrame
+from keras.models import load_model
 
 from src.config import config
 from src.data.cloud_storage import CloudStorage
@@ -29,9 +30,17 @@ def run_experiment(dataset: str, dataset_size: int, model_name: str, epochs: int
     logger.info(f'Train model ({model_name})')
     model, history = train_ranking_model(train_config, batch_size)
 
-    logger.info('Evaluate model')
-    ndcg_score = evaluate_ranking_model(eval_config, model, dataset_size)
+    ndcg_score = evaluate(eval_config, model, dataset_size)
+
     return history, ndcg_score
+
+def evaluate(dataset: str, dataset_size: int, model_name: str, epochs: int, docs: Dict = None):
+    _, eval_config = config.get_config(dataset, dataset_size, model_name, epochs, docs)
+
+    logger.info('Evaluating model...')
+    ndcg_score = evaluate_ranking_model(eval_config, model=None, dataset_size=dataset_size)
+
+    return ndcg_score
 
 
 @click.command()
@@ -40,10 +49,11 @@ def run_experiment(dataset: str, dataset_size: int, model_name: str, epochs: int
 @click.option('--env', type=str)
 @click.option('--dataset', type=str, default='pm19')
 @click.option('--dataset-size', type=str, default='sample')
+@click.option('--goal', type=str, default='evaluate')
 @click.option('--model-name', type=str, default='nrmf_simple_query')
 @click.option('--epochs', type=int, default=1)
 @click.option('--batch-size', type=int, default=2048)
-def main(job_dir: str, bucket_name: str, env: str, dataset: str, dataset_size: str, 
+def main(job_dir: str, bucket_name: str, env: str, dataset: str, dataset_size: str, goal: str,
          model_name: str, epochs: int, batch_size: int):
 
     # logger.add(sys.stdout, format='{time} {level} {message}')
@@ -106,14 +116,22 @@ def main(job_dir: str, bucket_name: str, env: str, dataset: str, dataset_size: s
     for dataset_id in dataset_ids:
         logger.info(f'Run an experiment on {model_name} with dataset: {dataset}.{dataset_id}')
 
-        history, ndcg_score = run_experiment(dataset, dataset_id, model_name, epochs, batch_size, docs)
-        
-        results.append({
-            'dataset_id': dataset_id,
-            'model': model_name,
-            'val_loss': history['val_loss'][-1],
-            'ndcg': ndcg_score,
-        })
+        if goal == 'evaluate':
+            ndcg_score = evaluate(dataset, dataset_id, model_name, epochs, docs)
+            results.append({
+                'dataset_id': dataset_id,
+                'model': model_name,
+                'ndcg': ndcg_score,
+            })
+        else:
+            history, ndcg_score = run_experiment(dataset, dataset_id, model_name, epochs, batch_size, docs)
+            results.append({
+                'dataset_id': dataset_id,
+                'model': model_name,
+                'val_loss': history['val_loss'][-1],
+                'ndcg': ndcg_score,
+            })
+
         gc.collect()
 
     results_df = DataFrame(results)
