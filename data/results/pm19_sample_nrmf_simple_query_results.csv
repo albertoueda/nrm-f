@@ -1,9 +1,9 @@
 	nrmf_simple_query
 ndcg	0.001
 map	0.0
-P_10	0.005
+P_10	0.007
 Rprec	0.0
-ndcg_cut_10	0.004
+ndcg_cut_10	0.006
 ndcg_cut_100	0.002
 num_rel_ret	14.0
 num_ret	20.0
@@ -12,5 +12,7 @@ P_30	0.004
 P_100	0.001
 ndcg_cut_20	0.005
 ndcg_cut_30	0.004
-dataset_id	sample
+val_loss	0.693
+dataset	pm19
+dataset_size	sample
 model	nrmf_simple_query

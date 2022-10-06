@@ -34,14 +34,14 @@ def train_ranking_model(config: TrainConfig, batch_size: int) -> Dict:
     data_processor.fit(train_df)
 
     filename = f'{project_dir}/models/{config.data_processor_filename}.pkl'
-    logger.info(f'Dumping data processor to {filename}')
+    logger.success(f'Dumping data processor to {filename}')
     with open(filename, 'wb') as file:
         pickle.dump(data_processor, file)
 
     train_generator = DataGenerator(train_df, data_processor, batch_size=batch_size)
     val_generator = DataGenerator(val_df, data_processor, batch_size=batch_size)
 
-    logger.info('Build model')
+    logger.info('Building model...')
     model = config.model(data_processor).build()
 
     model.compile(
@@ -65,7 +65,7 @@ def train_ranking_model(config: TrainConfig, batch_size: int) -> Dict:
     )
 
     filename = f'{project_dir}/models/{config.dataset_id}.{model.name}.h5'
-    logger.info(f'Saving model in \n  {filename}')
+    logger.success(f'Saving model in \n  {filename}')
     model.save(filename)
 
     return model, history.history

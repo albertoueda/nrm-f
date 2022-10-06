@@ -100,6 +100,8 @@ def process_run(run):
 
 def evaluate_ranking_model(config: EvalConfig, model: BaseModel = None, 
                            dataset_size: str = 'sample'):
+    logger.info('Evaluating model...')
+
     if not model:
         filepath = f'{project_dir}/models/{config.dataset_id}.{config.model_name}.h5'
         logger.info(f'Loading model\n  {filepath}...')
@@ -128,6 +130,7 @@ def evaluate_ranking_model(config: EvalConfig, model: BaseModel = None,
         run = predict_pm(model, test_dataset, data_processor, config.verbose)
 
         # Saving run
+        #TODO if model, config.model_name may be incorrect
         logger.info(f'Run:\n{run[:10]}')
         filename = f'{project_dir}/data/runs/{config.dataset_id}-{dataset_size}-{config.model_name}.csv.gz'
         logger.info(f'Saving run to:\n  {filename}')
@@ -140,8 +143,9 @@ def evaluate_ranking_model(config: EvalConfig, model: BaseModel = None,
         topics2019 = topics[topics.qid.str.startswith("2019")]
         qrels = read_csv(data_dir + 'qrels-pm-abs-all.txt', sep=' ', 
                             names=['qid', 'x', 'docno', 'label'], dtype={'qid':str})
+        qrels2019 = qrels[qrels.qid.str.startswith("2019")]
         eval_metrics = ['ndcg', 'map', 'P_10', 'Rprec', 'ndcg_cut_10', 'ndcg_cut_100', "num_rel_ret", "num_ret", 
                         'P_20', 'P_30', 'P_100', 'ndcg_cut_20', 'ndcg_cut_30', ]        
-        eval_df = pt.Experiment([run], topics, qrels, eval_metrics, names=[config.model_name])
+        eval_df = pt.Experiment([run], topics2019, qrels2019, eval_metrics, names=[config.model_name])
 
         return eval_df

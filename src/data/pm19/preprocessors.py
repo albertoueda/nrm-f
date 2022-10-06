@@ -25,8 +25,15 @@ class PM19DataProcessor(DataProcessor):
         if not docs:            
             self.docs = load_raw_docs()
         else:
-            self.docs = docs        
-            
+            self.docs = docs
+
+        self.fields = [
+            # 'articletitle',
+            'background',
+            'methods',
+            'results',
+            'conclusions'
+        ]
         self.queries = read_csv('../data/raw/pm19-queries.csv')
         super().__init__(self.docs, dataset_size, num_words, max_negatives)
 
@@ -51,11 +58,11 @@ class PM19DataProcessor(DataProcessor):
 
         if 'train' in listwise_filename:
             filename = f'{project_dir}/data/raw/pm19-train-' + self.dataset_size + '.csv.gz'
-            logger.info(f'-------------- Read:\n{filename}')
+            logger.success(f'-------------- Read:\n{filename}')
             return read_csv(filename)
         else:
             filename = f'{project_dir}/data/raw/pm19-val-' + self.dataset_size + '.csv.gz'
-            logger.info(f'-------------- Read:\n{filename}')
+            logger.success(f'-------------- Read:\n{filename}')
             return read_csv(filename)
 
     def process_df(self, df: DataFrame) -> None:
@@ -63,13 +70,16 @@ class PM19DataProcessor(DataProcessor):
         # logger.info(f'docs loaded: { len(self.docs) }')
 
         df['docno'] = df['docno'].astype(np.int64)
-        df['background'] = df['docno'].apply(lambda docno: self.docs[docno]['nlmcategorybackground']).astype(str)
-        df['conclusions'] = df['docno'].apply(lambda docno: self.docs[docno]['nlmcategoryconclusions']).astype(str)
+        df['abstract'] = df['docno'].apply(lambda docno: self.docs[docno]['abstracttext_orig']).astype(str)
         df['label'] = df['label'].astype(float)
+
+        for field in self.fields:
+            df[field] = df['docno'].apply(lambda docno: self.docs[docno][f'nlmcategory{field}']).astype(str)
 
         df = df.merge(self.queries, on='qid', how='left')
         df['query'] = df['query'].astype(str)
 
+        # TODO change log level to info
         # logger.debug(f'Processed df (shape, head): {df.shape}\n{df.head(1)} ') 
         return df
 
@@ -82,8 +92,8 @@ class PM19DataProcessor(DataProcessor):
 
         sentences = set()
         sentences |= set(df['query'])
-        sentences |= set(df['background'])
-        sentences |= set(df['conclusions'])
+        for text_field in self.fields + ['abstract']:
+            sentences |= set(df[text_field])
 
         self.tokenizer = Tokenizer(
             oov_token='<OOV>',
@@ -93,6 +103,14 @@ class PM19DataProcessor(DataProcessor):
         self.tokenizer.fit_on_texts(sentences)
         del sentences
 
+    def get_sequence(self, df, col, maxlen):
+        return pad_sequences(
+            df[col].tolist(),
+            padding='post',
+            truncating='post',
+            maxlen=maxlen   #TODO map direct to the model input spec
+        )
+
     def process_batch(self, df: DataFrame) -> Tuple[Dict, List[int]]:
         df = self.process_df(df)
 
@@ -101,36 +119,21 @@ class PM19DataProcessor(DataProcessor):
         docno = df['docno'].to_numpy()
 
         df['query'] = self.tokenizer.texts_to_sequences(df['query'].tolist())
-        df['background'] = self.tokenizer.texts_to_sequences(df['background'].tolist())
-        df['conclusions'] = self.tokenizer.texts_to_sequences(df['conclusions'].tolist())
-
-        query = df['query'].tolist()
-        query = pad_sequences(
-            query,
-            padding='post',
-            truncating='post',
-            maxlen=10   #TODO map direct to the model input spec
-        )
-        background = df['background'].tolist()
-        background = pad_sequences(
-            background,
-            padding='post',
-            truncating='post',
-            maxlen=300
-        )
-        conclusions = df['conclusions'].tolist()
-        conclusions = pad_sequences(
-            conclusions,
-            padding='post',
-            truncating='post',
-            maxlen=300
-        )
         
+        for text_field in self.fields + ['abstract']:
+            df[text_field] = self.tokenizer.texts_to_sequences(df[text_field].tolist())
+
         label = df['label'].to_numpy()
 
-        return {
-            'docno': docno,
-            'query': query,
-            'background': background,
-            'conclusions': conclusions,
-        }, label
+        #TODO check field sizes
+        dict_sequences = {
+            'docno':       docno,
+            'query':       self.get_sequence(df, 'query', maxlen=10),
+            'abstract':    self.get_sequence(df, 'abstract', maxlen=1200),
+            'background':  self.get_sequence(df, 'background', maxlen=300),
+            'methods':     self.get_sequence(df, 'methods', maxlen=300),
+            'results':     self.get_sequence(df, 'results', maxlen=300),
+            'conclusions': self.get_sequence(df, 'conclusions', maxlen=300),
+        }
+        
+        return dict_sequences, label

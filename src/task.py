@@ -27,22 +27,12 @@ def run_experiment(dataset: str, dataset_size: int, model_name: str, epochs: int
                    batch_size: int, docs: Dict = None) -> Tuple[Dict, float]:
     train_config, eval_config = config.get_config(dataset, dataset_size, model_name, epochs, docs)
 
-    logger.info(f'Train model ({model_name})')
+    logger.info(f'Training model ({model_name})...')
     model, history = train_ranking_model(train_config, batch_size)
+                        
+    eval_df = evaluate_ranking_model(eval_config, model, dataset_size)
 
-    run = evaluate(eval_config, model, dataset_size)
-
-    return history, run
-
-#TODO change nammes
-def evaluate(dataset: str, dataset_size: int, model_name: str, epochs: int, docs: Dict = None):
-    _, eval_config = config.get_config(dataset, dataset_size, model_name, epochs, docs)
-
-    logger.info('Evaluating model...')
-    eval_df = evaluate_ranking_model(eval_config, model=None, dataset_size=dataset_size)
-
-    return eval_df
-
+    return history, eval_df
 
 @click.command()
 @click.option('--job-dir', type=str)
@@ -77,12 +67,6 @@ def main(job_dir: str, bucket_name: str, env: str, dataset: str, dataset_size: s
     else:
         job_name = 'chief'
 
-    if '-' in dataset_size:
-        start, stop = [int(n) for n in dataset_size.split('-')]
-        dataset_ids = range(start, stop + 1)
-    else:
-        dataset_ids = [dataset_size] #[int(dataset_id)]
-
     if env == 'cloud':
         logger.info('Download data')
         bucket = CloudStorage(bucket_name)
@@ -90,9 +74,9 @@ def main(job_dir: str, bucket_name: str, env: str, dataset: str, dataset_size: s
         Path(f'{project_dir}/data/processed').mkdir(parents=True, exist_ok=True)
         Path(f'{project_dir}/models').mkdir(exist_ok=True)
         filepaths = []
-        for dataset_id in dataset_ids:
-            filepaths.append(f'data/processed/listwise.{dataset}.{dataset_id}.train.pkl')
-            filepaths.append(f'data/processed/listwise.{dataset}.{dataset_id}.val.pkl')
+        # for dataset_id in dataset_ids:
+        #     filepaths.append(f'data/processed/listwise.{dataset}.{dataset_id}.train.pkl')
+        #     filepaths.append(f'data/processed/listwise.{dataset}.{dataset_id}.val.pkl')
 
         if dataset == 'cookpad':
             filepaths.append('data/raw/recipes.json')
@@ -113,33 +97,29 @@ def main(job_dir: str, bucket_name: str, env: str, dataset: str, dataset_size: s
     else:
         docs = None
 
-    results = []
-    for dataset_id in dataset_ids:
-        logger.info(f'Run an experiment on {model_name} with dataset: {dataset}.{dataset_id}')
+    logger.info(f'Run an experiment on {model_name} with dataset: {dataset}.{dataset_size}')
 
-        if goal == 'evaluate':
-            eval_df = evaluate(dataset, dataset_id, model_name, epochs, docs)
-            eval_df = eval_df.round(3)
-            eval_df['dataset_id'] = dataset_id
-            eval_df['model'] = model_name
+    if goal == 'evaluate':
+        _, eval_config = config.get_config(dataset, dataset_size, model_name, epochs, docs)        
+        eval_df = evaluate_ranking_model(eval_config, model=None, dataset_size=dataset_size)
+    else:
+        history, eval_df = run_experiment(dataset, dataset_size, model_name, epochs, batch_size, docs)
+        eval_df['val_loss'] = history['val_loss'][-1]
+    
+    eval_df = eval_df.round(3)
+    eval_df['dataset'] = dataset
+    eval_df['dataset_size'] = dataset_size
+    eval_df['model'] = model_name
 
-            filename = f'{project_dir}/data/results/{dataset}_{dataset_id}_{model_name}_results.csv'         
-            eval_df.set_index('name', drop=True).T.to_csv(filename, sep='\t')
-            logger.info(f'Results:\n  {eval_df.T}')
+    # VARY TRAINING SIZE
+    # CHECK RUNS
 
-        else:
-            history, ndcg_score = run_experiment(dataset, dataset_id, model_name, epochs, batch_size, docs)
-            results.append({
-                'dataset_id': dataset_id,
-                'model': model_name,
-                'val_loss': history['val_loss'][-1],
-                'ndcg': ndcg_score,
-            })
 
-        gc.collect()
+    filename = f'{project_dir}/data/results/{dataset}_{dataset_size}_{model_name}_results.csv'         
+    eval_df.set_index('name', drop=True).T.to_csv(filename, sep='\t')
+    logger.info(f'Results:\n  {eval_df.T}')
 
-    # results_df = DataFrame(results)
-    # results_df.to_csv(f'{project_dir}/logs/{dataset}_{model_name}_results.csv', index=False)
+    gc.collect()
 
     if env == 'cloud' and job_name == 'chief':
         for filepath in [
