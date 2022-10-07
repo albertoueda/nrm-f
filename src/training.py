@@ -56,6 +56,8 @@ def train_ranking_model(config: TrainConfig, batch_size: int) -> Dict:
         # tf.keras.callbacks.TensorBoard(log_dir=log_dir, histogram_freq=1),
         tf.keras.callbacks.EarlyStopping(monitor='val_loss', patience=2)
     ]
+
+    #TODO log
     history = model.fit(
         train_generator,
         epochs = config.epochs,

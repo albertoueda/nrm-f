@@ -114,38 +114,42 @@ def evaluate_ranking_model(config: EvalConfig, model: BaseModel = None,
         }
         model = keras.models.load_model(filepath, custom_objects=custom_objects)
 
-    logger.info('Load val dataset')
-    with open(f'{project_dir}/models/{config.data_processor_filename}.pkl', 'rb') as file:
+    #TODO remove need of stored data processors
+    filename = f'{project_dir}/models/{config.data_processor_filename}.pkl'
+    with open(filename, 'rb') as file:
         data_processor = pickle.load(file)
+    logger.success(f'Loaded data processor:\n  {filename}')
 
-    if 'cookpad' in config.dataset:
-        with open(f'{project_dir}/data/processed/{config.dataset}.val.pkl', 'rb') as file:
-            val_dataset = pickle.load(file)
-        ndcg_score = predict(model, val_dataset, data_processor, config.verbose)
-        logger.info(f'NDCG: {ndcg_score}')
-        return ndcg_score
+    filename = f'{project_dir}/data/raw/pm19-test-{dataset_size}.csv.gz'
+    test_dataset = read_csv(filename)
+    logger.success(f'Loaded test dataset:\n  {filename}')
 
-    else:
-        test_dataset = read_csv(f'{project_dir}/data/raw/pm19-test-{dataset_size}.csv.gz')
-        run = predict_pm(model, test_dataset, data_processor, config.verbose)
+    run = predict_pm(model, test_dataset, data_processor, config.verbose)
 
-        # Saving run
-        #TODO if model, config.model_name may be incorrect
-        logger.info(f'Run:\n{run[:10]}')
-        filename = f'{project_dir}/data/runs/{config.dataset_id}-{dataset_size}-{config.model_name}.csv.gz'
-        logger.info(f'Saving run to:\n  {filename}')
-        run.to_csv(filename, index=False)
+    # Saving run
+    #TODO if model, config.model_name may be incorrect
+    logger.info(f'Run:\n{run[:10]}')
+    filename = f'{project_dir}/data/runs/{config.dataset_id}-{dataset_size}-{config.model_name}.csv.gz'
+    logger.info(f'Saving run to:\n  {filename}')
+    run.to_csv(filename, index=False)
 
-        data_dir = '~/data/runs-pm17-19-gla/'
-        # one = io_utils.read_df(data_dir + 'df-pm17-19-THE-ONE-III.csv.gz')
-        topics = read_csv(data_dir + "topics-pm-all-list-disease-gene.txt", sep='\t', names=["qid", "query"])
-        topics.qid = topics.qid.astype(str)
-        topics2019 = topics[topics.qid.str.startswith("2019")]
-        qrels = read_csv(data_dir + 'qrels-pm-abs-all.txt', sep=' ', 
-                            names=['qid', 'x', 'docno', 'label'], dtype={'qid':str})
-        qrels2019 = qrels[qrels.qid.str.startswith("2019")]
-        eval_metrics = ['ndcg', 'map', 'P_10', 'Rprec', 'ndcg_cut_10', 'ndcg_cut_100', "num_rel_ret", "num_ret", 
-                        'P_20', 'P_30', 'P_100', 'ndcg_cut_20', 'ndcg_cut_30', ]        
-        eval_df = pt.Experiment([run], topics2019, qrels2019, eval_metrics, names=[config.model_name])
+    data_dir = '~/data/runs-pm17-19-gla/'
+    # one = io_utils.read_df(data_dir + 'df-pm17-19-THE-ONE-III.csv.gz')
+    topics = read_csv(data_dir + "topics-pm-all-list-disease-gene.txt", sep='\t', names=["qid", "query"])
+    topics.qid = topics.qid.astype(str)
+    topics2019 = topics[topics.qid.str.startswith("2019")]
+    qrels = read_csv(data_dir + 'qrels-pm-abs-all.txt', sep=' ', 
+                        names=['qid', 'x', 'docno', 'label'], dtype={'qid':str})
+    qrels2019 = qrels[qrels.qid.str.startswith("2019")]
+    eval_metrics = ['ndcg', 'map', 'P_10', 'Rprec', 'ndcg_cut_10', 'ndcg_cut_100', "num_rel_ret", "num_ret", 
+                    'P_20', 'P_30', 'P_100', 'ndcg_cut_20', 'ndcg_cut_30', ]        
+ 
+    # sanity check
+    # run = read_csv(data_dir + 'df-pm17-19-THE-ONE-III.csv.gz', dtype={'qid':str})
+    # run = run[run.qid.str.startswith("2019")].reset_index(drop=True)
+    # run = run[['qid', 'docno', 'score_scibert_abstracttext_orig']]
+    # run = run.rename(columns={'score_scibert_abstracttext_orig':'score'})
 
-        return eval_df
+    eval_df = pt.Experiment([run], topics2019, qrels2019, eval_metrics, names=[config.model_name])
+
+    return eval_df

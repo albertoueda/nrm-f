@@ -4,7 +4,7 @@ import os
 import sys
 import warnings
 from pathlib import Path
-from time import time
+import time
 from typing import Dict, Tuple
 
 import click
@@ -47,9 +47,7 @@ def run_experiment(dataset: str, dataset_size: int, model_name: str, epochs: int
 def main(job_dir: str, bucket_name: str, env: str, dataset: str, dataset_size: str, goal: str,
          model_name: str, epochs: int, batch_size: int):
 
-    # logger.add(sys.stdout, format='{time} {level} {message}')
-    # log_filepath = f'{project_dir}/logs/{int(time())}.log'
-    # logger.add(log_filepath)
+    # logger.add(f'{project_dir}/logs/{time.strftime("%Y-%m-%d-%Hh%M")}.log')
 
     if dataset not in ['cookpad', 'pm19']:
         raise ValueError(f'Unknown dataset is specified: {dataset}')
@@ -113,7 +111,6 @@ def main(job_dir: str, bucket_name: str, env: str, dataset: str, dataset_size: s
 
     # VARY TRAINING SIZE
     # CHECK RUNS
-
 
     filename = f'{project_dir}/data/results/{dataset}_{dataset_size}_{model_name}_results.csv'         
     eval_df.set_index('name', drop=True).T.to_csv(filename, sep='\t')

@@ -92,7 +92,7 @@ class PM19DataProcessor(DataProcessor):
 
         sentences = set()
         sentences |= set(df['query'])
-        for text_field in self.fields + ['abstract']:
+        for text_field in ['abstract'] + self.fields:
             sentences |= set(df[text_field])
 
         self.tokenizer = Tokenizer(

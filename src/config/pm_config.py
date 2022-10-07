@@ -13,17 +13,17 @@ def nrmf_simple_query_config(dataset_id: str, dataset_size: str, epochs: int,
     train_config = TrainConfig(
         dataset_id = dataset_id,
         data_processor = data_processor,
-        data_processor_filename = 'pm19DataProcessor',
+        data_processor_filename = f'pm19{dataset_size}DataProcessor',
         model = nrmf.NRMFSimpleQuery,
         epochs = epochs,
-        verbose = 2,
+        verbose = 1,
     )
 
     eval_config = EvalConfig(
         dataset_id = dataset_id,
-        data_processor_filename = 'pm19DataProcessor',
+        data_processor_filename = f'pm19{dataset_size}DataProcessor',
         model_name = 'nrmf_simple_query',
-        verbose = 0,
+        verbose = 1,
     )
     
     return train_config, eval_config
