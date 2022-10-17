@@ -75,8 +75,8 @@ def predict_pm(model, df:DataFrame, data_processor, verbose=1) -> float:
 
         y_true = df_qid['label'].tolist()
         y_pred = df_qid['pred'].tolist()
-        logger.info(f'y_true: {y_true[:20]}')
-        logger.info(f'y_pred: {y_pred[:20]}')
+        logger.info(f'y_true: {[ int(y) for y in y_true[:5] ]}')
+        logger.info(f'y_pred: {[ round(y, 3) for y in y_pred[:5] ]}')
 
         df_qids.append(df_qid)
 
@@ -88,15 +88,21 @@ def predict_pm(model, df:DataFrame, data_processor, verbose=1) -> float:
 # eg 1 Q0 2799006 1 1.61028065 model
 def process_run(run):
     run.qid = run.qid.astype(int).astype(str)#.str[4:]
-    run['x'] = 'x'
+    # run['x'] = 'x'
     run['score'] = run.pred
-    run['name'] = 'name'
+    # run['name'] = 'name'
 
-    run['rank'] = run.groupby(['qid'])['score'].rank(ascending = False, method='first').astype(int)
-    run = run.sort_values(['qid', 'rank'], ascending=[True, True])
+    # run['rank'] = run.groupby(['qid'])['score'].rank(ascending = False, method='first').astype(int)
+    # run = run.sort_values(['qid', 'rank'], ascending=[True, True])
     run = run.reset_index(drop=True)
 
-    return run[['qid', 'x', 'docno', 'rank', 'score', 'name']] 
+    # return run[['qid', 'x', 'docno', 'rank', 'score', 'name']] 
+    return run[['qid', 'docno', 'score']] 
+    #  python task.py --dataset-size=full --goal=evaluate
+
+
+
+    
 
 def evaluate_ranking_model(config: EvalConfig, model: BaseModel = None, 
                            dataset_size: str = 'sample'):
@@ -146,9 +152,11 @@ def evaluate_ranking_model(config: EvalConfig, model: BaseModel = None,
  
     # sanity check
     # run = read_csv(data_dir + 'df-pm17-19-THE-ONE-III.csv.gz', dtype={'qid':str})
+    # run = read_csv(f'{project_dir}/data/runs/scibert.csv', dtype={'qid':str})
     # run = run[run.qid.str.startswith("2019")].reset_index(drop=True)
     # run = run[['qid', 'docno', 'score_scibert_abstracttext_orig']]
     # run = run.rename(columns={'score_scibert_abstracttext_orig':'score'})
+    # run.to_csv(f'{project_dir}/data/runs/scibert.csv.gz', index=False)
 
     eval_df = pt.Experiment([run], topics2019, qrels2019, eval_metrics, names=[config.model_name])
 

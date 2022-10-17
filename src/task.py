@@ -40,7 +40,7 @@ def run_experiment(dataset: str, dataset_size: int, model_name: str, epochs: int
 @click.option('--env', type=str)
 @click.option('--dataset', type=str, default='pm19')
 @click.option('--dataset-size', type=str, default='sample')
-@click.option('--goal', type=str, default='evaluate')
+@click.option('--goal', type=str, default='all')
 @click.option('--model-name', type=str, default='nrmf_simple_query')
 @click.option('--epochs', type=int, default=1)
 @click.option('--batch-size', type=int, default=2048)
@@ -109,8 +109,10 @@ def main(job_dir: str, bucket_name: str, env: str, dataset: str, dataset_size: s
     eval_df['dataset_size'] = dataset_size
     eval_df['model'] = model_name
 
-    # VARY TRAINING SIZE
+    # VARY VALIDATION SIZE
     # CHECK RUNS
+    # VARY TRAINING SIZE, KEEP FULL TEST
+    # Check field sizes
 
     filename = f'{project_dir}/data/results/{dataset}_{dataset_size}_{model_name}_results.csv'         
     eval_df.set_index('name', drop=True).T.to_csv(filename, sep='\t')
