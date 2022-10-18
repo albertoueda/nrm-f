@@ -1,0 +1,173 @@
+Complete
+(phd-nrm-f) u@dell:~/git/feature-interactions-in-document-ranking/src$ python task.py --dataset-size=sample --goal=evaluate
+2022-10-06 16:46:37.510587: I tensorflow/core/platform/cpu_feature_guard.cc:193] This TensorFlow binary is optimized with oneAPI Deep Neural Network Library (oneDNN) to use the following CPU instructions in performance-critical operations:  AVX2 FMA
+To enable them in other operations, rebuild TensorFlow with the appropriate compiler flags.
+2022-10-06 16:46:37.641359: W tensorflow/stream_executor/platform/default/dso_loader.cc:64] Could not load dynamic library 'libcudart.so.11.0'; dlerror: libcudart.so.11.0: cannot open shared object file: No such file or directory
+2022-10-06 16:46:37.641420: I tensorflow/stream_executor/cuda/cudart_stub.cc:29] Ignore above cudart dlerror if you do not have a GPU set up on your machine.
+2022-10-06 16:46:37.663719: E tensorflow/stream_executor/cuda/cuda_blas.cc:2981] Unable to register cuBLAS factory: Attempting to register factory for plugin cuBLAS when one has already been registered
+2022-10-06 16:46:38.294967: W tensorflow/stream_executor/platform/default/dso_loader.cc:64] Could not load dynamic library 'libnvinfer.so.7'; dlerror: libnvinfer.so.7: cannot open shared object file: No such file or directory
+2022-10-06 16:46:38.295087: W tensorflow/stream_executor/platform/default/dso_loader.cc:64] Could not load dynamic library 'libnvinfer_plugin.so.7'; dlerror: libnvinfer_plugin.so.7: cannot open shared object file: No such file or directory
+2022-10-06 16:46:38.295134: W tensorflow/compiler/tf2tensorrt/utils/py_utils.cc:38] TF-TRT Warning: Cannot dlopen some TensorRT libraries. If you would like to use Nvidia GPU with TensorRT, please make sure the missing libraries mentioned above are installed properly.
+PyTerrier 0.8.1 has loaded Terrier 5.6 (built by craigmacdonald on 2021-09-17 13:27)
+
+No etc/terrier.properties, using terrier.default.properties for bootstrap configuration.
+2022-10-06 16:46:41.005 | INFO     | __main__:main:91 - Loading docs
+2022-10-06 16:46:41.005 | INFO     | __main__:main:98 - Run an experiment on nrmf_simple_query with dataset: pm19.sample
+=========== sample sample
+2022-10-06 16:46:43.411 | INFO     | src.evaluation:evaluate_ranking_model:103 - Evaluating model...
+2022-10-06 16:46:43.411 | INFO     | src.evaluation:evaluate_ranking_model:107 - Loading model
+  /home/u/git/feature-interactions-in-document-ranking/models/pm19.nrmf_simple_query.h5...
+2022-10-06 16:46:44.327641: I tensorflow/stream_executor/cuda/cuda_gpu_executor.cc:966] could not open file to read NUMA node: /sys/bus/pci/devices/0000:01:00.0/numa_node
+Your kernel may have been built without NUMA support.
+2022-10-06 16:46:44.327766: W tensorflow/stream_executor/platform/default/dso_loader.cc:64] Could not load dynamic library 'libcudart.so.11.0'; dlerror: libcudart.so.11.0: cannot open shared object file: No such file or directory
+2022-10-06 16:46:44.327832: W tensorflow/stream_executor/platform/default/dso_loader.cc:64] Could not load dynamic library 'libcublas.so.11'; dlerror: libcublas.so.11: cannot open shared object file: No such file or directory
+2022-10-06 16:46:44.327941: W tensorflow/stream_executor/platform/default/dso_loader.cc:64] Could not load dynamic library 'libcublasLt.so.11'; dlerror: libcublasLt.so.11: cannot open shared object file: No such file or directory
+2022-10-06 16:46:44.328000: W tensorflow/stream_executor/platform/default/dso_loader.cc:64] Could not load dynamic library 'libcufft.so.10'; dlerror: libcufft.so.10: cannot open shared object file: No such file or directory
+2022-10-06 16:46:44.328058: W tensorflow/stream_executor/platform/default/dso_loader.cc:64] Could not load dynamic library 'libcurand.so.10'; dlerror: libcurand.so.10: cannot open shared object file: No such file or directory
+2022-10-06 16:46:44.328116: W tensorflow/stream_executor/platform/default/dso_loader.cc:64] Could not load dynamic library 'libcusolver.so.11'; dlerror: libcusolver.so.11: cannot open shared object file: No such file or directory
+2022-10-06 16:46:44.328174: W tensorflow/stream_executor/platform/default/dso_loader.cc:64] Could not load dynamic library 'libcusparse.so.11'; dlerror: libcusparse.so.11: cannot open shared object file: No such file or directory
+2022-10-06 16:46:44.328232: W tensorflow/stream_executor/platform/default/dso_loader.cc:64] Could not load dynamic library 'libcudnn.so.8'; dlerror: libcudnn.so.8: cannot open shared object file: No such file or directory
+2022-10-06 16:46:44.328260: W tensorflow/core/common_runtime/gpu/gpu_device.cc:1934] Cannot dlopen some GPU libraries. Please make sure the missing libraries mentioned above are installed properly if you would like to use GPU. Follow the guide at https://www.tensorflow.org/install/gpu for how to download and setup the required libraries for your platform.
+Skipping registering GPU devices...
+2022-10-06 16:46:44.328571: I tensorflow/core/platform/cpu_feature_guard.cc:193] This TensorFlow binary is optimized with oneAPI Deep Neural Network Library (oneDNN) to use the following CPU instructions in performance-critical operations:  AVX2 FMA
+To enable them in other operations, rebuild TensorFlow with the appropriate compiler flags.
+2022-10-06 16:46:44.742 | SUCCESS  | src.evaluation:evaluate_ranking_model:121 - Loaded data processor:
+  /home/u/git/feature-interactions-in-document-ranking/models/pm19sampleDataProcessor.pkl
+2022-10-06 16:46:44.743 | SUCCESS  | src.evaluation:evaluate_ranking_model:125 - Loaded test dataset:
+  /home/u/git/feature-interactions-in-document-ranking/data/raw/pm19-test-sample.csv.gz
+2022-10-06 16:46:44.744 | INFO     | src.evaluation:predict_pm:69 - Evaluating qid 20191...
+/home/u/git/phd-alberto-ueda/venvs/phd-nrm-f/lib/python3.8/site-packages/keras/engine/functional.py:637: UserWarning: Input dict contained keys ['abstract', 'methods', 'results'] which did not match any model input. They will be ignored by the model.
+  inputs = self._flatten_to_reference_inputs(inputs)
+2022-10-06 16:46:44.938 | INFO     | src.evaluation:predict_pm:78 - y_true: [0.0, 1.0, 1.0, 1.0, 1.0, 0.0, 1.0, 1.0, 0.0, 1.0, 1.0, 1.0, 0.0, 1.0, 1.0, 0.0, 1.0, 0.0, 1.0, 1.0]
+2022-10-06 16:46:44.939 | INFO     | src.evaluation:predict_pm:79 - y_pred: [0.5000426173210144, 0.5000237226486206, 0.5001011490821838, 0.5000259280204773, 0.4996810555458069, 0.4999929368495941, 0.5000397562980652, 0.49981531500816345, 0.49981531500816345, 0.5000485777854919, 0.5000318884849548, 0.5000296235084534, 0.5000624060630798, 0.5000091195106506, 0.4999997615814209, 0.4999918043613434, 0.49974164366722107, 0.49972662329673767, 0.4997231960296631, 0.5000303387641907]
+2022-10-06 16:46:44.955 | INFO     | src.evaluation:evaluate_ranking_model:131 - Run:
+     qid  x     docno  rank     score  name
+0  20191  x  24200969     1  0.500101  name
+1  20191  x  29753029     2  0.500062  name
+2  20191  x  29304009     3  0.500049  name
+3  20191  x  24926260     4  0.500043  name
+4  20191  x  26851802     5  0.500040  name
+5  20191  x  15694309     6  0.500032  name
+6  20191  x  23550516     7  0.500030  name
+7  20191  x  27679543     8  0.500030  name
+8  20191  x  24614711     9  0.500026  name
+9  20191  x  29181212    10  0.500024  name
+2022-10-06 16:46:44.955 | INFO     | src.evaluation:evaluate_ranking_model:133 - Saving run to:
+  /home/u/git/feature-interactions-in-document-ranking/data/runs/pm19-sample-nrmf_simple_query.csv.gz
+2022-10-06 16:46:50.676 | INFO     | __main__:main:117 - Results:
+                                0
+name          nrmf_simple_query
+ndcg                      0.578
+map                        0.23
+P_10                      0.503
+Rprec                     0.279
+ndcg_cut_10                0.48
+ndcg_cut_100              0.391
+num_rel_ret                3836
+num_ret                   40000
+P_20                      0.426
+P_30                        0.4
+P_100                      0.29
+ndcg_cut_20                0.43
+ndcg_cut_30               0.416
+dataset                    pm19
+dataset_size             sample
+model         nrmf_simple_query
+2022-10-06 16:46:50.767 | INFO     | __main__:main:130 - Done
+(phd-nrm-f) u@dell:~/git/feature-interactions-in-document-ranking/src$ 
+
+========================
+
+
+2022-10-06 16:40:16.654 | INFO     | __main__:main:91 - Loading docs
+2022-10-06 16:40:16.654 | INFO     | __main__:main:98 - Run an experiment on nrmf_simple_query with dataset: pm19.sample
+2022-10-06 16:40:19.177 | INFO     | src.evaluation:evaluate_ranking_model:103 - Evaluating model...
+2022-10-06 16:40:19.177 | INFO     | src.evaluation:evaluate_ranking_model:107 - Loading model
+  /home/u/git/feature-interactions-in-document-ranking/models/pm19.nrmf_simple_query.h5...
+2022-10-06 16:40:20.703 | SUCCESS  | src.evaluation:evaluate_ranking_model:121 - Loaded data processor:
+  /home/u/git/feature-interactions-in-document-ranking/models/pm19sampleDataProcessor.pkl
+2022-10-06 16:40:20.724 | SUCCESS  | src.evaluation:evaluate_ranking_model:125 - Loaded test dataset:
+  /home/u/git/feature-interactions-in-document-ranking/data/raw/pm19-test-sample.csv.gz
+2022-10-06 16:40:20.725 | INFO     | src.evaluation:predict_pm:69 - Evaluating qid 20191...
+2022-10-06 16:40:20.935 | INFO     | src.evaluation:predict_pm:78 - y_true: [0.0, 1.0, 1.0, 1.0, 1.0, 0.0, 1.0, 1.0, 0.0, 1.0, 1.0, 1.0, 0.0, 1.0, 1.0, 0.0, 1.0, 0.0, 1.0, 1.0]
+2022-10-06 16:40:20.936 | INFO     | src.evaluation:predict_pm:79 - y_pred: [0.5000426173210144, 0.5000237226486206, 0.5001011490821838, 0.5000259280204773, 0.4996810555458069, 0.4999929368495941, 0.5000397562980652, 0.49981531500816345, 0.49981531500816345, 0.5000485777854919, 0.5000318884849548, 0.5000296235084534, 0.5000624060630798, 0.5000091195106506, 0.4999997615814209, 0.4999918043613434, 0.49974164366722107, 0.49972662329673767, 0.4997231960296631, 0.5000303387641907]
+2022-10-06 16:40:20.949 | INFO     | src.evaluation:evaluate_ranking_model:131 - Run:
+     qid  x     docno  rank     score  name
+0  20191  x  24200969     1  0.500101  name
+1  20191  x  29753029     2  0.500062  name
+2  20191  x  29304009     3  0.500049  name
+3  20191  x  24926260     4  0.500043  name
+4  20191  x  26851802     5  0.500040  name
+5  20191  x  15694309     6  0.500032  name
+6  20191  x  23550516     7  0.500030  name
+7  20191  x  27679543     8  0.500030  name
+8  20191  x  24614711     9  0.500026  name
+9  20191  x  29181212    10  0.500024  name
+2022-10-06 16:40:20.950 | INFO     | src.evaluation:evaluate_ranking_model:133 - Saving run to:
+  /home/u/git/feature-interactions-in-document-ranking/data/runs/pm19-sample-nrmf_simple_query.csv.gz
+2022-10-06 16:40:21.140 | INFO     | __main__:main:118 - Results:
+                                0
+name          nrmf_simple_query
+ndcg                      0.002
+map                       0.001
+P_10                       0.02
+Rprec                     0.001
+ndcg_cut_10               0.016
+ndcg_cut_100              0.006
+num_rel_ret                  14
+num_ret                      20
+P_20                      0.017
+P_30                      0.012
+P_100                     0.004
+ndcg_cut_20               0.015
+ndcg_cut_30               0.012
+dataset                    pm19
+dataset_size             sample
+model         nrmf_simple_query
+2022-10-06 16:40:21.249 | INFO     | __main__:main:131 - Done
+2022-10-06 16:40:29.736 | INFO     | __main__:main:91 - Loading docs
+2022-10-06 16:40:29.737 | INFO     | __main__:main:98 - Run an experiment on nrmf_simple_query with dataset: pm19.sample
+2022-10-06 16:40:32.426 | INFO     | src.evaluation:evaluate_ranking_model:103 - Evaluating model...
+2022-10-06 16:40:32.426 | INFO     | src.evaluation:evaluate_ranking_model:107 - Loading model
+  /home/u/git/feature-interactions-in-document-ranking/models/pm19.nrmf_simple_query.h5...
+2022-10-06 16:40:33.766 | SUCCESS  | src.evaluation:evaluate_ranking_model:121 - Loaded data processor:
+  /home/u/git/feature-interactions-in-document-ranking/models/pm19sampleDataProcessor.pkl
+2022-10-06 16:40:33.768 | SUCCESS  | src.evaluation:evaluate_ranking_model:125 - Loaded test dataset:
+  /home/u/git/feature-interactions-in-document-ranking/data/raw/pm19-test-sample.csv.gz
+2022-10-06 16:40:33.768 | INFO     | src.evaluation:predict_pm:69 - Evaluating qid 20191...
+2022-10-06 16:40:33.917 | INFO     | src.evaluation:predict_pm:78 - y_true: [0.0, 1.0, 1.0, 1.0, 1.0, 0.0, 1.0, 1.0, 0.0, 1.0, 1.0, 1.0, 0.0, 1.0, 1.0, 0.0, 1.0, 0.0, 1.0, 1.0]
+2022-10-06 16:40:33.918 | INFO     | src.evaluation:predict_pm:79 - y_pred: [0.5000426173210144, 0.5000237226486206, 0.5001011490821838, 0.5000259280204773, 0.4996810555458069, 0.4999929368495941, 0.5000397562980652, 0.49981531500816345, 0.49981531500816345, 0.5000485777854919, 0.5000318884849548, 0.5000296235084534, 0.5000624060630798, 0.5000091195106506, 0.4999997615814209, 0.4999918043613434, 0.49974164366722107, 0.49972662329673767, 0.4997231960296631, 0.5000303387641907]
+2022-10-06 16:40:33.930 | INFO     | src.evaluation:evaluate_ranking_model:131 - Run:
+     qid  x     docno  rank     score  name
+0  20191  x  24200969     1  0.500101  name
+1  20191  x  29753029     2  0.500062  name
+2  20191  x  29304009     3  0.500049  name
+3  20191  x  24926260     4  0.500043  name
+4  20191  x  26851802     5  0.500040  name
+5  20191  x  15694309     6  0.500032  name
+6  20191  x  23550516     7  0.500030  name
+7  20191  x  27679543     8  0.500030  name
+8  20191  x  24614711     9  0.500026  name
+9  20191  x  29181212    10  0.500024  name
+2022-10-06 16:40:33.930 | INFO     | src.evaluation:evaluate_ranking_model:133 - Saving run to:
+  /home/u/git/feature-interactions-in-document-ranking/data/runs/pm19-sample-nrmf_simple_query.csv.gz
+2022-10-06 16:40:34.072 | INFO     | __main__:main:118 - Results:
+                                0
+name          nrmf_simple_query
+ndcg                      0.002
+map                       0.001
+P_10                       0.02
+Rprec                     0.001
+ndcg_cut_10               0.016
+ndcg_cut_100              0.006
+num_rel_ret                  14
+num_ret                      20
+P_20                      0.017
+P_30                      0.012
+P_100                     0.004
+ndcg_cut_20               0.015
+ndcg_cut_30               0.012
+dataset                    pm19
+dataset_size             sample
+model         nrmf_simple_query
+2022-10-06 16:40:34.215 | INFO     | __main__:main:131 - Done
